@@ -7,6 +7,7 @@ import type {ReactNode} from "react"
 
 import {authClient} from "@/lib/auth-client"
 import {ThemeProvider} from "next-themes";
+import {Toaster} from "sonner";
 
 export function Providers({children}: { children: ReactNode }) {
     const router = useRouter()
@@ -19,6 +20,8 @@ export function Providers({children}: { children: ReactNode }) {
             disableTransitionOnChange
         >
             <AuthUIProvider
+                nameRequired={true}
+                signUp={false}
                 passkey={true}
                 authClient={authClient}
                 navigate={router.push}
@@ -30,6 +33,8 @@ export function Providers({children}: { children: ReactNode }) {
                 Link={Link}
             >
                 {children}
+
+                <Toaster richColors/>
             </AuthUIProvider>
         </ThemeProvider>
     )
