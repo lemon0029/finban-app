@@ -8,9 +8,23 @@ import {PlusCircle, Search} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Skeleton} from "@/components/ui/skeleton";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
+import {Checkbox} from "@/components/ui/checkbox";
 
 async function fetchProducts() {
     const res = await fetch("http://localhost:8080/api/products", {credentials: "include"})
+    return await res.json()
+}
+
+async function searchProducts(keyword: string) {
+    const res = await fetch(`http://localhost:8080/api/products/search?keyword=${encodeURIComponent(keyword)}`, {credentials: "include"})
     return await res.json()
 }
 
@@ -18,6 +32,17 @@ export default function ProductList() {
 
     const [searchTerm, setSearchTerm] = useState("")
     const [products, setProducts] = useState<ProductDTO[]>([])
+
+    const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false)
+    const [externalSearchTerm, setExternalSearchTerm] = useState("")
+    const [searchResults, setSearchResults] = useState<{
+        id: string
+        name: string
+        code: string
+    }[]>([])
+    const [isSearching, setIsSearching] = useState(false)
+
+    const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
 
     useEffect(() => {
         fetchProducts().then(data => setProducts(data))
@@ -27,6 +52,25 @@ export default function ProductList() {
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.code.toLowerCase().includes(searchTerm.toLowerCase())
     )
+
+    const handleSearchExternal = () => {
+        if (!externalSearchTerm) return
+
+        setIsSearching(true)
+
+        searchProducts(externalSearchTerm).then((data) => {
+            setSearchResults(data.map((item: { [x: string]: never; }) => {
+                return {
+                    id: item["unMappedProperties"]["_id"],
+                    name: item["NAME"],
+                    code: item["CODE"]
+                }
+            }))
+
+            setIsSearching(false)
+        })
+
+    }
 
     const motions = {
         container: {
@@ -60,7 +104,7 @@ export default function ProductList() {
                         />
                     </div>
                     <Button
-                        // onClick={() => setIsSearchDialogOpen(true)}
+                        onClick={() => setIsSearchDialogOpen(true)}
                         className="relative overflow-hidden group whitespace-nowrap"
                         variant="outline"
                     >
@@ -113,6 +157,75 @@ export default function ProductList() {
                     </div>
                 )
             }
+
+            <Dialog open={isSearchDialogOpen} onOpenChange={setIsSearchDialogOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>添加基金产品</DialogTitle>
+                        <DialogDescription>
+                            搜索第三方平台的基金产品并添加到您的列表中
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="flex items-center gap-2">
+                            <Input
+                                name="externalSearch"
+                                placeholder="输入基金名称或代码搜索..."
+                                value={externalSearchTerm}
+                                onChange={(e) => setExternalSearchTerm(e.target.value)}
+                                className="flex-1"
+                            />
+                            <Button disabled={isSearching}
+                                    variant={"outline"}
+                                    onClick={handleSearchExternal}
+                            >
+                                {isSearching ? "搜索中..." : "搜索"}
+                            </Button>
+                        </div>
+
+                        {searchResults.length > 0 ? (
+                            <div className="border rounded-md overflow-hidden">
+                                <div className="grid grid-cols-9 bg-muted px-4 py-2 text-sm font-medium">
+                                    <div className="col-span-1"></div>
+                                    <div className="col-span-2">代码</div>
+                                    <div className="col-span-6">名称</div>
+                                </div>
+                                <div className="max-h-80 overflow-y-auto">
+                                    {searchResults.map((result) => (
+                                        <div key={result.code}
+                                             className="grid grid-cols-9 px-4 py-3 border-t hover:bg-muted/50">
+                                            <div className="col-span-1">
+                                                <Checkbox id={result.code} onCheckedChange={(checked) => {
+                                                    const newSet = new Set(selectedProducts)
+                                                    if (checked) {
+                                                        newSet.add(result.code)
+                                                    } else {
+                                                        newSet.delete(result.code)
+                                                    }
+
+                                                    console.log(newSet)
+                                                    setSelectedProducts(newSet)
+                                                }}/>
+                                            </div>
+                                            <div className="col-span-2 text-muted-foreground">{result.code}</div>
+                                            <div className="col-span-6 font-medium truncate">{result.name}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : externalSearchTerm && !isSearching ? (
+                            <div className="flex justify-center items-center text-muted-foreground h-72">
+                                未找到匹配的基金产品
+                            </div>
+                        ) : null}
+                    </div>
+
+                    <DialogFooter>
+                        <Button type="submit" disabled={selectedProducts.size == 0}>提交</Button>
+                    </DialogFooter>
+
+                </DialogContent>
+            </Dialog>
         </>
     )
 }
