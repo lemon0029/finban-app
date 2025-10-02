@@ -18,7 +18,7 @@ function Nav({value}: { value: number }) {
 }
 
 function Change({value}: { value: number }) {
-    const color = value > 0 ? "text-green-500" : value < 0 ? "text-red-500" : "text-muted-foreground";
+    const color = value > 0 ? "text-[var(--color-profit)]" : value < 0 ? "text-[var(--color-loss)]" : "text-muted-foreground";
 
     const icon = value > 0 ?
         <TrendingUp className={`mr-1 h-3 w-3 ${color}`}/> :
