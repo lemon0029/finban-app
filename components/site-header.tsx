@@ -7,6 +7,7 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 import {Button} from "@/components/ui/button";
 import {Moon, Sun} from "lucide-react";
 import * as React from "react";
+import {usePathname} from "next/navigation";
 
 function ThemeModeToggle() {
     const {setTheme} = useTheme()
@@ -38,6 +39,32 @@ function ThemeModeToggle() {
 }
 
 export function SiteHeader() {
+    const pathname = usePathname()
+
+    const pageName = () => {
+        if (pathname == "/" || pathname == "/dashboard") {
+            return "Dashboard"
+        }
+
+        if (pathname == "/products") {
+            return "Product Repository"
+        }
+
+        if (pathname == "/transactions") {
+            return "Transactions"
+        }
+
+        if (pathname == "/earnings") {
+            return "Gain History"
+        }
+
+        if (pathname == "/account/settings") {
+            return "Account Settings"
+        }
+
+        return "Page"
+    };
+
     return (
         <header
             className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
@@ -47,7 +74,9 @@ export function SiteHeader() {
                     orientation="vertical"
                     className="mx-2 data-[orientation=vertical]:h-4"
                 />
-                <h1 className="text-base font-medium">Dashboard</h1>
+                <h1 className="text-base font-medium">
+                    {pageName()}
+                </h1>
                 <div className="ml-auto flex items-center gap-2">
                     <ThemeModeToggle/>
                 </div>
