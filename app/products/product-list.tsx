@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {ProductDTO} from "@/lib/types";
 import {Product} from "@/app/products/product";
 import {motion} from "framer-motion";
@@ -91,24 +91,24 @@ function AddProductDialog() {
     );
 
     const productItems = (searchResults.map((item) => (
-        <div key={item.code}
-             className="grid grid-cols-10 px-4 py-3 border-t hover:bg-muted/50">
-            <div className="col-span-1">
-                <Checkbox id={item.code} onCheckedChange={(checked) => {
-                    const newSet = new Set(selectedProducts)
-                    if (checked) {
-                        newSet.add(item.code)
-                    } else {
-                        newSet.delete(item.code)
-                    }
-
-                    console.log(newSet)
-                    setSelectedProducts(newSet)
-                }}/>
+        <React.Fragment key={item.code}>
+            <div key={item.code}
+                 className="grid grid-cols-10 px-4 py-3 border-t hover:bg-muted/50">
+                <div className="col-span-1">
+                    <Checkbox id={item.code} onCheckedChange={(checked) => {
+                        const newSet = new Set(selectedProducts)
+                        if (checked) {
+                            newSet.add(item.code)
+                        } else {
+                            newSet.delete(item.code)
+                        }
+                        setSelectedProducts(newSet)
+                    }}/>
+                </div>
+                <div className="col-span-3 text-muted-foreground">{item.code}</div>
+                <div className="col-span-6 font-medium truncate">{item.name}</div>
             </div>
-            <div className="col-span-3 text-muted-foreground">{item.code}</div>
-            <div className="col-span-6 font-medium truncate">{item.name}</div>
-        </div>
+        </React.Fragment>
     )));
 
     const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -186,7 +186,7 @@ function AddProductDialog() {
                     {searchInputArea}
 
                     {searchResults.length > 0 ? (
-                        <ScrollArea className="h-100 border rounded-md">
+                        <ScrollArea className="h-90 border rounded-md overflow-y-auto">
                             <div className="grid grid-cols-10 bg-muted px-4 py-2 text-sm font-medium sticky top-0">
                                 <div className="col-span-1"></div>
                                 <div className="col-span-3">代码</div>
@@ -196,13 +196,13 @@ function AddProductDialog() {
                             {productItems}
                         </ScrollArea>
                     ) : (
-                        <div className="flex justify-center items-center text-muted-foreground h-100">
+                        <div className="flex justify-center items-center text-muted-foreground h-90">
                             未找到匹配的基金产品
                         </div>
                     )}
                 </div>
 
-                <DrawerFooter className="mb-4">
+                <DrawerFooter className="mb-0">
                     <DrawerClose asChild>
                         <Button type="submit" disabled={selectedProducts.size == 0}>提交</Button>
                     </DrawerClose>
@@ -243,8 +243,7 @@ export default function ProductList() {
 
     return (
         <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                <h1 className="text-3xl font-bold">产品列表</h1>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-4">
                 <div className="flex items-center w-full md:w-auto gap-2">
                     <div className="relative flex-1">
                         <Search
