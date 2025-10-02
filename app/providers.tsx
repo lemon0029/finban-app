@@ -33,7 +33,6 @@ export function Providers({children}: { children: ReactNode }) {
                 Link={Link}
             >
                 {children}
-
                 <Toaster richColors/>
             </AuthUIProvider>
         </ThemeProvider>

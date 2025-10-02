@@ -6,7 +6,7 @@ export default function Home() {
         <>
             <RedirectToSignIn/>
             <SignedIn>
-                <DashboardPage />
+            <DashboardPage/>
             </SignedIn>
         </>
     );
