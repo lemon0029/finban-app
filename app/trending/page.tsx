@@ -2,6 +2,7 @@ import {RedirectToSignIn, SignedIn} from "@daveyplate/better-auth-ui";
 import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/app-sidebar";
 import {SiteHeader} from "@/components/site-header";
+import GoldPrice from "@/app/trending/gold-price";
 
 export default function Trending() {
     return (
@@ -20,7 +21,7 @@ export default function Trending() {
                     <SidebarInset>
                         <SiteHeader/>
                         <div className="@container/main flex flex-1 flex-col gap-2 p-4 md:p-6">
-                            Not implemented yet.
+                            <GoldPrice />
                         </div>
                     </SidebarInset>
                 </SidebarProvider>

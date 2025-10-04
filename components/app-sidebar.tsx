@@ -14,7 +14,14 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {CalculatorIcon, ChartAreaIcon, FactoryIcon, FileTextIcon, PiggyBankIcon} from "lucide-react";
+import {
+    CalculatorIcon,
+    ChartCandlestickIcon,
+    ChartNoAxesCombinedIcon,
+    FactoryIcon,
+    FileTextIcon,
+    PiggyBankIcon
+} from "lucide-react";
 import Link from "next/link";
 
 const data = {
@@ -32,7 +39,7 @@ const data = {
         {
             title: "Gain History",
             url: "/earnings",
-            icon: ChartAreaIcon,
+            icon: ChartNoAxesCombinedIcon,
         },
         {
             title: "Transactions",
@@ -53,7 +60,7 @@ const data = {
         {
             title: "Trending View",
             url: "/trending",
-            icon: ChartAreaIcon,
+            icon: ChartCandlestickIcon,
             external: true,
         }
     ],

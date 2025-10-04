@@ -14,3 +14,9 @@ export interface ProductNavDTO {
     pctChange: number;
     date: string;
 }
+
+// 黄金价格数据模型
+export interface GoldPriceDTO {
+    time: string,
+    price: string
+}
