@@ -14,7 +14,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {ChartAreaIcon, FileTextIcon, PiggyBankIcon} from "lucide-react";
+import {ChartAreaIcon, CherryIcon, FileTextIcon, PiggyBankIcon} from "lucide-react";
 import Link from "next/link";
 
 const data = {
@@ -23,6 +23,11 @@ const data = {
             title: "Dashboard",
             url: "/dashboard",
             icon: IconDashboard,
+        },
+        {
+            title: "My Holdings",
+            url: "/holdings",
+            icon: PiggyBankIcon,
         },
         {
             title: "Gain History",
@@ -70,7 +75,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
                             <Link href="/" className="flex items-center gap-2">
-                                <PiggyBankIcon className="!size-5"/>
+                                <CherryIcon className="!size-5"/>
                                 <span className="text-base font-semibold">FinBoard</span>
                             </Link>
                         </SidebarMenuButton>

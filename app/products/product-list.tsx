@@ -260,7 +260,7 @@ export default function ProductList() {
             </div>
 
             {
-                products.length == 0 ? (
+                products.length == 0 && (
                     <div>
                         <p className="text-muted-foreground ml-1 mb-3">加载产品数据中...</p>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -271,7 +271,11 @@ export default function ProductList() {
                             <Skeleton className="h-35 w-full"/>
                         </div>
                     </div>
-                ) : filteredProducts.length == 0 ? (
+                )
+            }
+
+            {
+                filteredProducts.length == 0 ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="text-center">
                             <p className="text-muted-foreground">没有找到匹配的产品</p>

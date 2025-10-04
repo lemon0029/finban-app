@@ -3,7 +3,7 @@ import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/app-sidebar";
 import {SiteHeader} from "@/components/site-header";
 
-export default function Earnings() {
+export default function MyHoldings() {
     return (
         <>
             <RedirectToSignIn/>
