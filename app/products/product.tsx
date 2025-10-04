@@ -1,8 +1,9 @@
 "use client"
 
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {BarChart3, Calendar, Code, TrendingDown, TrendingUp} from "lucide-react";
 import {ProductDTO} from "@/lib/types";
+import {Item, ItemContent, ItemFooter, ItemTitle} from "@/components/ui/item";
+import React from "react";
 
 function Nav({value}: { value: number }) {
     return (
@@ -38,27 +39,29 @@ function Change({value}: { value: number }) {
 
 export function Product(product: ProductDTO) {
     return (
-        <Card
-            className="overflow-hidden rounded-md group hover:shadow-md transition-all duration-300 hover:translate-y-[-2px] py-0 gap-2">
-            <CardHeader className="pb-1 pt-3 px-3">
-                <CardTitle className="text-base font-bold truncate">{product.name}</CardTitle>
-                <CardDescription className="flex items-center text-xs">
-                    <Code className="h-3 w-3 mr-1"/>
-                    {product.code}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="px-3 py-0">
-                <div className="grid grid-cols-2">
-                    <Nav value={product.latestNav.value}/>
-                    <Change value={product.latestNav.pctChange}/>
+        <Item variant="outline" key={product.code} className={"gap-2 p-3"}>
+            <ItemContent>
+                <ItemTitle>{product.name}</ItemTitle>
+                <ItemFooter className="flex items-center text-xs mt-2">
+                    <div className="flex gap-10">
+                        <div className="flex flex-col">
+                            <span className="text-xs text-muted-foreground flex items-center">
+                                <Calendar className="h-3 w-3 mr-1"/>日期
+                            </span>
+                            <div className="font-semibold group-hover:scale-105 transition-transform">
+                                {product.latestNav.date}
+                            </div>
+                        </div>
+                        <Nav value={product.latestNav.value}/>
+                        <Change value={product.latestNav.pctChange}/>
+                    </div>
+                </ItemFooter>
+            </ItemContent>
+            <ItemContent className={"self-start"}>
+                <div className="flex justify-end items-center text-xs text-muted-foreground">
+                    <Code className="h-3 w-3 mr-1"/> {product.code}
                 </div>
-            </CardContent>
-            <CardFooter className="pt-0 pb-2 px-3 text-xs text-muted-foreground">
-                <div className="flex items-center">
-                    <Calendar className="h-3 w-3 mr-1"/>
-                    {product.latestNav.date}
-                </div>
-            </CardFooter>
-        </Card>
+            </ItemContent>
+        </Item>
     )
 }

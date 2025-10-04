@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import {ProductDTO} from "@/lib/types";
 import {Product} from "@/app/products/product";
 import {motion} from "framer-motion";
-import {Loader2Icon, PlusCircle, Search} from "lucide-react";
+import {Activity, CheckIcon, Code, Plus, PlusCircle, Search, Tag} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {Skeleton} from "@/components/ui/skeleton";
@@ -17,7 +17,6 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog";
-import {Checkbox} from "@/components/ui/checkbox";
 import {useMediaQuery} from "@/hooks/use-media-query";
 import {
     Drawer,
@@ -30,6 +29,9 @@ import {
     DrawerTrigger
 } from "@/components/ui/drawer";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {Spinner} from "@/components/ui/spinner";
+import {Empty, EmptyDescription, EmptyTitle} from "@/components/ui/empty";
+import {Item, ItemActions, ItemContent, ItemFooter, ItemGroup, ItemSeparator, ItemTitle} from "@/components/ui/item";
 
 async function fetchProducts() {
     const res = await fetch("http://localhost:8080/api/products", {credentials: "include"})
@@ -49,6 +51,8 @@ function AddProductDialog() {
         id: string
         name: string
         code: string
+        fundType: string
+        nav: number
     }[]>([])
     const [isSearching, setIsSearching] = useState(false)
 
@@ -61,10 +65,13 @@ function AddProductDialog() {
 
         searchProducts(searchTerm).then((data) => {
             setSearchResults(data.map((item: { [x: string]: never; }) => {
+                const fundBaseInfo = item["unMappedProperties"]["FundBaseInfo"]
                 return {
                     id: item["unMappedProperties"]["_id"],
                     name: item["NAME"],
-                    code: item["CODE"]
+                    code: item["CODE"],
+                    fundType: fundBaseInfo["FTYPE"],
+                    nav: fundBaseInfo["DWJZ"]
                 }
             }))
 
@@ -80,34 +87,57 @@ function AddProductDialog() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1"
             />
-            <Button disabled={isSearching}
-                    variant={"outline"}
-                    onClick={handleSearch}
-            >
-                {isSearching ? <Loader2Icon className="animate-spin"/> : null}
-                搜索
+            <Button disabled={isSearching} variant={"outline"} onClick={handleSearch}>
+                {isSearching && <Spinner/>}搜索
             </Button>
         </div>
     );
 
-    const productItems = (searchResults.map((item) => (
+    const productItems = (searchResults.map((item, index) => (
         <React.Fragment key={item.code}>
-            <div key={item.code}
-                 className="grid grid-cols-10 px-4 py-3 border-t hover:bg-muted/50">
-                <div className="col-span-1">
-                    <Checkbox id={item.code} onCheckedChange={(checked) => {
-                        const newSet = new Set(selectedProducts)
-                        if (checked) {
-                            newSet.add(item.code)
-                        } else {
-                            newSet.delete(item.code)
+            <Item data-selected={`${selectedProducts.has(item.code)}`} key={item.code}
+                  className={"py-3 px-1 rounded-none"}>
+                <ItemContent>
+                    <ItemTitle className={"mb-1"}>{item.name}</ItemTitle>
+                    <ItemFooter className={"grid grid-cols-4"}>
+                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-1">
+                            <Code className="h-3 w-3 mr-1"/> {item.code}
+                        </div>
+
+                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-1">
+                            <Activity className="h-3 w-3 mr-1"/> {item.nav}
+                        </div>
+
+                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-2">
+                            <Tag className="h-3 w-3 mr-1"/> {item.fundType}
+                        </div>
+                    </ItemFooter>
+                </ItemContent>
+                <ItemActions>
+                    <Button
+                        size="icon-sm"
+                        variant="outline"
+                        className={`rounded-full ${selectedProducts.has(item.code) ? "bg-accent" : ""}`}
+                        aria-label="Invite"
+                        onClick={() => {
+                            const newSet = new Set(selectedProducts)
+                            const checked = newSet.has(item.code)
+                            if (!checked) {
+                                newSet.add(item.code)
+                            } else {
+                                newSet.delete(item.code)
+                            }
+                            setSelectedProducts(newSet)
+                        }}
+                    >
+                        {
+                            selectedProducts.has(item.code) ? (<CheckIcon/>) : <Plus/>
                         }
-                        setSelectedProducts(newSet)
-                    }}/>
-                </div>
-                <div className="col-span-3 text-muted-foreground">{item.code}</div>
-                <div className="col-span-6 font-medium truncate">{item.name}</div>
-            </div>
+                    </Button>
+                </ItemActions>
+            </Item>
+
+            {index !== searchResults.length - 1 && <ItemSeparator/>}
         </React.Fragment>
     )));
 
@@ -137,14 +167,10 @@ function AddProductDialog() {
                         {searchInputArea}
 
                         {searchResults.length > 0 ? (
-                            <ScrollArea className="h-100 border rounded-md">
-                                <div className="grid grid-cols-10 bg-muted px-4 py-2 text-sm font-medium sticky top-0">
-                                    <div className="col-span-1"></div>
-                                    <div className="col-span-3">代码</div>
-                                    <div className="col-span-6">名称</div>
-                                </div>
-
-                                {productItems}
+                            <ScrollArea className="h-100">
+                                <ItemGroup>
+                                    {productItems}
+                                </ItemGroup>
                             </ScrollArea>
                         ) : (
                             <div className="flex justify-center items-center text-muted-foreground h-100">
@@ -181,23 +207,19 @@ function AddProductDialog() {
                     </DrawerDescription>
                 </DrawerHeader>
 
-                <div className="grid gap-4 px-4">
+                <div className="grid gap-4 px-4 h-2/3">
 
                     {searchInputArea}
 
                     {searchResults.length > 0 ? (
-                        <ScrollArea className="h-90 border rounded-md overflow-y-auto">
-                            <div className="grid grid-cols-10 bg-muted px-4 py-2 text-sm font-medium sticky top-0">
-                                <div className="col-span-1"></div>
-                                <div className="col-span-3">代码</div>
-                                <div className="col-span-6">名称</div>
-                            </div>
-
-                            {productItems}
+                        <ScrollArea className="h-120 overflow-y-auto pb-2">
+                            <ItemGroup>
+                                {productItems}
+                            </ItemGroup>
                         </ScrollArea>
                     ) : (
-                        <div className="flex justify-center items-center text-muted-foreground h-90">
-                            未找到匹配的基金产品
+                        <div className="flex justify-center items-center text-muted-foreground h-120">
+                            未找到匹配的产品
                         </div>
                     )}
                 </div>
@@ -243,7 +265,7 @@ export default function ProductList() {
 
     return (
         <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-1 gap-4">
                 <div className="flex items-center w-full md:w-auto gap-2">
                     <div className="relative flex-1">
                         <Search
@@ -263,27 +285,33 @@ export default function ProductList() {
                 products.length == 0 && (
                     <div>
                         <p className="text-muted-foreground ml-1 mb-3">加载产品数据中...</p>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                            <Skeleton className="h-35 w-full"/>
-                            <Skeleton className="h-35 w-full"/>
-                            <Skeleton className="h-35 w-full"/>
-                            <Skeleton className="h-35 w-full"/>
-                            <Skeleton className="h-35 w-full"/>
+                        <div className="flex flex-col gap-2">
+                            <Skeleton className="h-20 w-full"/>
+                            <Skeleton className="h-20 w-full"/>
+                            <Skeleton className="h-20 w-2/3"/>
                         </div>
                     </div>
                 )
             }
 
             {
-                filteredProducts.length == 0 ? (
-                    <div className="flex justify-center items-center h-64">
-                        <div className="text-center">
-                            <p className="text-muted-foreground">没有找到匹配的产品</p>
-                        </div>
+                filteredProducts.length > 0 && (
+                    <div className="text-right text-sm text-muted-foreground">
+                        当前共有 {filteredProducts.length} 个产品
                     </div>
+                )
+            }
+
+            {
+                filteredProducts.length == 0 ? (
+                    <Empty>
+                        <EmptyTitle>No data</EmptyTitle>
+                        <EmptyDescription>No products found, try adjusting your search or add new
+                            products.</EmptyDescription>
+                    </Empty>
                 ) : (
                     <motion.div
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3"
+                        className="grid grid-cols-1 xl:grid-cols-3 gap-3"
                         variants={motions.container}
                         initial="hidden"
                         animate="show"
@@ -296,14 +324,6 @@ export default function ProductList() {
                             ))
                         }
                     </motion.div>
-                )
-            }
-
-            {
-                filteredProducts.length > 0 && (
-                    <div className="mt-10 text-right text-sm text-muted-foreground">
-                        当前共有 {filteredProducts.length} 个产品
-                    </div>
                 )
             }
         </>
