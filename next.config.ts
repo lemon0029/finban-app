@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
                 source: '/igoldaccount/golddetail/history-price',
                 destination: 'https://mobile.cmbchina.com/igoldaccount/golddetail/history-price',
             },
+            {
+                source: '/api/quote/NDX/chart',
+                destination: 'https://api.nasdaq.com/api/quote/NDX/chart'
+            }
         ]
     },
 };

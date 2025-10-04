@@ -54,7 +54,10 @@ export default function GoldPrice() {
         fetchGoldPrice(dateRange).then(data => {
             const prices = data["bizResult"]["data"]["priceList"].map((item: GoldPriceDTO) => {
                 return {
-                    time: parseYYYYMMDD(item.time),
+                    time: parseYYYYMMDD(item.time).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                    }),
                     price: item.price,
                 }
             })
@@ -114,8 +117,8 @@ export default function GoldPrice() {
                         accessibilityLayer
                         data={chartData}
                         margin={{
-                            left: 12,
-                            right: 12,
+                            left: 10,
+                            right: 10,
                         }}
                     >
                         <defs>
@@ -139,22 +142,10 @@ export default function GoldPrice() {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={10}
-                            tickFormatter={(value: Date) => {
-                                return value.toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                });
-                            }}
                         />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent hideLabel/>}
-                            labelFormatter={(value) => {
-                                return value.toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "numeric",
-                                })
-                            }}
+                            content={<ChartTooltipContent indicator={"line"} />}
                         />
                         <Area
                             className="transition-opacity duration-500 ease-in-out"

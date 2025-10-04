@@ -91,13 +91,13 @@ export function EarningsCard() {
                 </div>
             </CardHeader>
             <CardContent className="px-1">
-                <ChartContainer config={chartConfig} className={"h-[120px] w-full"}>
+                <ChartContainer config={chartConfig} className={"h-[150px] w-full"}>
                     <AreaChart
                         accessibilityLayer
                         data={rawData}
                         margin={{
-                            left: 12,
-                            right: 12,
+                            left: 10,
+                            right: 10,
                         }}
                     >
                         <defs>
