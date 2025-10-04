@@ -21,7 +21,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
     initialScale: 1,
     viewportFit: "cover",
-    width: "device-width"
+    width: "device-width",
+    maximumScale: 1,
+    userScalable: false
 }
 
 export default function RootLayout({children,}: Readonly<{ children: React.ReactNode; }>) {
