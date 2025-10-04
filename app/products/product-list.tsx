@@ -212,13 +212,13 @@ function AddProductDialog() {
                     {searchInputArea}
 
                     {searchResults.length > 0 ? (
-                        <ScrollArea className="h-120 overflow-y-auto pb-2">
+                        <ScrollArea className="h-90 overflow-y-auto pb-2">
                             <ItemGroup>
                                 {productItems}
                             </ItemGroup>
                         </ScrollArea>
                     ) : (
-                        <div className="flex justify-center items-center text-muted-foreground h-120">
+                        <div className="flex justify-center items-center text-muted-foreground h-90">
                             未找到匹配的产品
                         </div>
                     )}

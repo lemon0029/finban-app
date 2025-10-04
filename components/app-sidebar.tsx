@@ -14,7 +14,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import {ChartAreaIcon, CherryIcon, FileTextIcon, PiggyBankIcon} from "lucide-react";
+import {CalculatorIcon, ChartAreaIcon, FactoryIcon, FileTextIcon, PiggyBankIcon} from "lucide-react";
 import Link from "next/link";
 
 const data = {
@@ -43,6 +43,18 @@ const data = {
             title: "Product Repository",
             url: "/products",
             icon: IconDatabase,
+        },
+        {
+            title: "Gain Calculator",
+            url: "/calculator",
+            icon: CalculatorIcon,
+            external: true,
+        },
+        {
+            title: "Trending View",
+            url: "/trending",
+            icon: ChartAreaIcon,
+            external: true,
         }
     ],
     navSecondary: [
@@ -75,7 +87,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                             className="data-[slot=sidebar-menu-button]:!p-1.5"
                         >
                             <Link href="/" className="flex items-center gap-2">
-                                <CherryIcon className="!size-5"/>
+                                <FactoryIcon className="!size-5"/>
                                 <span className="text-base font-semibold">FinBoard</span>
                             </Link>
                         </SidebarMenuButton>

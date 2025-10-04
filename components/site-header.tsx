@@ -62,6 +62,18 @@ export function SiteHeader() {
             return "Account Settings"
         }
 
+        if (pathname == "/holdings") {
+            return "My Holdings"
+        }
+
+        if (pathname == "/calculator") {
+            return "Calculator"
+        }
+
+        if (pathname == "/trending") {
+            return "Trending"
+        }
+
         return "Page"
     };
 
