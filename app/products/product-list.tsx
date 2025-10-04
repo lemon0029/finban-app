@@ -34,12 +34,14 @@ import {Empty, EmptyDescription, EmptyTitle} from "@/components/ui/empty";
 import {Item, ItemActions, ItemContent, ItemFooter, ItemGroup, ItemSeparator, ItemTitle} from "@/components/ui/item";
 
 async function fetchProducts() {
-    const res = await fetch("http://localhost:8080/api/products", {credentials: "include"})
+    const baseUrl = process.env.API_BASE_URL
+    const res = await fetch(`${baseUrl}/products`, {credentials: "include"})
     return await res.json()
 }
 
 async function searchProducts(keyword: string) {
-    const res = await fetch(`http://localhost:8080/api/products/search?keyword=${encodeURIComponent(keyword)}`, {credentials: "include"})
+    const baseUrl = process.env.API_BASE_URL
+    const res = await fetch(`${baseUrl}/products/search?keyword=${encodeURIComponent(keyword)}`, {credentials: "include"})
     return await res.json()
 }
 
