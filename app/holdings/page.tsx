@@ -2,6 +2,7 @@ import {RedirectToSignIn, SignedIn} from "@daveyplate/better-auth-ui";
 import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/app-sidebar";
 import {SiteHeader} from "@/components/site-header";
+import Holdings from "@/app/holdings/my-holdings";
 
 export default function MyHoldings() {
     return (
@@ -20,7 +21,7 @@ export default function MyHoldings() {
                     <SidebarInset>
                         <SiteHeader/>
                         <div className="@container/main flex flex-1 flex-col gap-2 p-4 md:p-6">
-                            Not implemented yet.
+                            <Holdings />
                         </div>
                     </SidebarInset>
                 </SidebarProvider>

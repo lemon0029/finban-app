@@ -20,3 +20,11 @@ export interface GoldPriceDTO {
     time: string,
     price: string
 }
+
+export interface HoldingDTO {
+    productCode: string;
+    productName: string;
+    shares: number;
+    costAmount: number;
+    startHoldingDate: string;
+}
