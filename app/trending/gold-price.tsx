@@ -22,7 +22,7 @@ import {Spinner} from "@/components/ui/spinner";
 const chartConfig = {
     price: {
         label: "Price",
-        color: "var(--chart-1)",
+        color: "var(--color-profit)",
     },
 } satisfies ChartConfig
 
@@ -67,6 +67,12 @@ export default function GoldPrice() {
             if (prices.length >= 2) {
                 const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
                 setPctChange(change)
+
+                if (change >= 0) {
+                    chartConfig.price.color = "var(--color-profit)"
+                } else {
+                    chartConfig.price.color = "var(--color-loss)"
+                }
             }
 
             setDataLoading(false)
@@ -163,12 +169,9 @@ export default function GoldPrice() {
             <CardFooter className="flex-col items-start gap-2 text-sm">
                 <div className="flex gap-2 leading-none font-medium">
                     <div className={"flex justify-start"}>
-                        <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={"text-[var(--color-profit)]"}>{pctChange.toFixed(1)}%</span> in the {dateRangeLabel()}</span>
+                        <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={`text-[${chartConfig.price.color}]`}>{pctChange.toFixed(1)}%</span> in the {dateRangeLabel()}</span>
                         {pctChange > 0 ? <TrendingUp className="h-4 w-4 ml-1"/> : <TrendingDown className={"h-4 w-4 ml-1"}/>}
                     </div>
-                </div>
-                <div className="text-muted-foreground leading-none">
-                    Showing price trend for the selected period
                 </div>
             </CardFooter>
         </Card>

@@ -13,7 +13,7 @@ import {Badge} from "@/components/ui/badge";
 const NDXChartConfig = {
     price: {
         label: "Price",
-        color: "var(--chart-2)",
+        color: "var(--color-profit)",
     },
 } satisfies ChartConfig
 
@@ -41,11 +41,20 @@ export default function NDXIndex() {
                 }
             })
 
+            const pctChange = data["data"]["percentageChange"];
+            setPctChange(pctChange)
+
+            if (pctChange >= 0) {
+                NDXChartConfig.price.color = "var(--color-profit)"
+            } else {
+                NDXChartConfig.price.color = "var(--color-loss)"
+            }
+
             setChartData(prices)
             setPreviousClose(parseFloat(data["data"]["previousClose"].replace(/,/g, '')))
             setTimeAsOf(data["data"]["timeAsOf"])
-            setPctChange(data["data"]["percentageChange"])
             setDataLoading(false)
+
         })
     }, [])
 
@@ -118,13 +127,10 @@ export default function NDXIndex() {
                             {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
                                 <TrendingDown className={"h-4 w-4 mr-1"}/>}
                         </div>
-                        <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span
-                            className={"text-[var(--color-profit)]"}>{pctChange}</span> in <Badge
-                            variant={"outline"}>{timeAsOf}</Badge></span>
+                        <span>
+                            {pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={`text-[${NDXChartConfig.price.color}]`}>{pctChange}</span> in <Badge variant={"outline"}>{timeAsOf}</Badge>
+                        </span>
                     </div>
-                </div>
-                <div className="text-muted-foreground leading-none">
-                    Showing real-time data for NDX index
                 </div>
             </CardFooter>
         </Card>
