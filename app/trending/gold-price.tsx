@@ -1,7 +1,7 @@
 "use client"
 
 import {TrendingDown, TrendingUp} from "lucide-react"
-import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from "recharts"
+import {Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis} from "recharts"
 
 import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
@@ -18,6 +18,7 @@ import {useEffect, useState} from "react";
 import {GoldPriceDTO} from "@/lib/types";
 import {Spinner} from "@/components/ui/spinner";
 import {Badge} from "@/components/ui/badge";
+import {toast} from "sonner";
 
 
 const chartConfig = {
@@ -28,6 +29,11 @@ const chartConfig = {
 } satisfies ChartConfig
 
 async function fetchGoldPrice(dateRange: string) {
+    if (dateRange === "0") {
+        const response = await fetch("/igoldaccount/golddetail/time-price", {method: "POST"});
+        return await response.json();
+    }
+
     const response = await fetch("/igoldaccount/golddetail/history-price", {
         method: "POST",
         body: JSON.stringify({month: dateRange}),
@@ -48,20 +54,38 @@ export default function GoldPrice() {
     const [dataLoading, setDataLoading] = useState(false)
     const [chartData, setChartData] = useState([] as { time: Date; price: number }[])
     const [pctChange, setPctChange] = useState(0)
+    const [dateInfo, setDateInfo] = useState("")
+    const [previousClose, setPreviousClose] = useState(0)
 
     useEffect(() => {
         setDataLoading(true)
 
         fetchGoldPrice(dateRange).then(data => {
+            console.log(data)
             const prices = data["bizResult"]["data"]["priceList"].map((item: GoldPriceDTO) => {
                 return {
-                    time: parseYYYYMMDD(item.time).toLocaleDateString("en-US", {
+                    time: dateRange === "0" ? item.time : parseYYYYMMDD(item.time).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
                     }),
                     price: item.price,
                 }
             })
+
+            if (dateRange === "0") {
+                const date = new Date(data["bizResult"]["data"]["lastDayDate"].replace(/[年月]/g, '-').replace(/日/, ''));
+
+                const formatted = date.toLocaleDateString('en-US', {
+                    month: 'short', // "Oct"
+                    day: 'numeric', // 3
+                    year: 'numeric' // 2025
+                })
+
+                setDateInfo(formatted)
+                setPreviousClose(parseFloat(data["bizResult"]["data"]["lastDayPrice"]))
+            } else {
+                setPreviousClose(0)
+            }
 
             setChartData(prices)
 
@@ -74,15 +98,20 @@ export default function GoldPrice() {
                 } else {
                     chartConfig.price.color = "var(--color-loss)"
                 }
+            } else {
+                setPctChange(0)
             }
 
             setDataLoading(false)
+        }).catch(() => {
+            setDataLoading(false)
+            toast.error("Failed to fetch gold price data")
         })
     }, [dateRange])
 
     const dateRangeLabel = () => {
         switch (dateRange) {
-            case "0": return "today";
+            case "0": return dateInfo;
             case "1": return "the past month";
             case "3": return "the past 3 months";
             case "6": return "the past 6 months";
@@ -152,7 +181,7 @@ export default function GoldPrice() {
                         />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent indicator={"line"} />}
+                            content={<ChartTooltipContent indicator={"line"}/>}
                         />
                         <Area
                             className="transition-opacity duration-500 ease-in-out"
@@ -164,16 +193,27 @@ export default function GoldPrice() {
                             strokeWidth={2}
                             dot={false}
                         />
+                        <ReferenceLine orientation="right" y={previousClose} stroke={"oklch(55.1% 0.027 264.364)"}
+                                       strokeDasharray="3 3" label={{
+                            value: `Prev Close: ${previousClose}`,
+                            color: "oklch(55.1% 0.027 264.364)",
+                            position: "top",
+                            fontSize: 10,
+                        }}/>
                     </AreaChart>
                 </ChartContainer>
             </CardContent>
             <CardFooter className="flex-col items-start text-xs lg:text-sm">
                 {
-                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner className={"mr-2"}/> Updating...</div>) : (
+                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner
+                        className={"mr-2"}/> Updating...</div>) : (
                         <div className="flex gap-2 leading-none font-medium">
                             <div className={"flex justify-start items-center"}>
-                                {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> : <TrendingDown className={"h-4 w-4 mr-1"}/>}
-                                <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={`text-[${chartConfig.price.color}]`}>{pctChange.toFixed(1)}%</span> in <Badge variant={"outline"}>{dateRangeLabel()}</Badge></span>
+                                {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
+                                    <TrendingDown className={"h-4 w-4 mr-1"}/>}
+                                <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span
+                                    className={`text-[${chartConfig.price.color}]`}>{pctChange.toFixed(1)}%</span> in <Badge
+                                    variant={"outline"}>{dateRangeLabel()}</Badge></span>
                             </div>
                         </div>
                     )

@@ -17,6 +17,7 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
+import {toast} from "sonner";
 
 
 const NDXChartConfig = {
@@ -127,6 +128,9 @@ export default function NDXIndex() {
             }
 
             setDataLoading(false)
+        }).catch(() => {
+            setDataLoading(false)
+            toast.error("Failed to fetch NDX data")
         })
     }, [dateRange])
 
