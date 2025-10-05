@@ -5,6 +5,7 @@ import {SiteHeader} from "@/components/site-header";
 import GoldPrice from "@/app/trending/gold-price";
 import NDXIndex from "@/app/trending/ndx-index";
 import React from "react";
+import CSI300Index from "@/app/trending/csi-300-index";
 
 export default function Trending() {
     return (
@@ -26,6 +27,7 @@ export default function Trending() {
                             <div className={"grid grid-cols-1 lg:grid-cols-2 gap-3"}>
                                 <GoldPrice />
                                 <NDXIndex />
+                                <CSI300Index />
                             </div>
                         </div>
                     </SidebarInset>

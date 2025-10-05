@@ -18,6 +18,18 @@ const nextConfig: NextConfig = {
             {
                 source: '/api/quote/NDX/chart',
                 destination: 'https://api.nasdaq.com/api/quote/NDX/chart'
+            },
+            {
+                source: '/appstock/app/minute/query',
+                destination: 'https://web.ifzq.gtimg.cn/appstock/app/minute/query'
+            },
+            {
+                source: '/appstock/app/day/query',
+                destination: 'https://web.ifzq.gtimg.cn/appstock/app/day/query'
+            },
+            {
+                source: '/ifzqgtimg/appstock/app/newfqkline/get',
+                destination: 'https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get'
             }
         ]
     },

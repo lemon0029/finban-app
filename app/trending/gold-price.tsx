@@ -19,6 +19,7 @@ import {GoldPriceDTO} from "@/lib/types";
 import {Spinner} from "@/components/ui/spinner";
 import {Badge} from "@/components/ui/badge";
 import {toast} from "sonner";
+import {parseYYYYMMDD} from "@/lib/utils";
 
 
 const chartConfig = {
@@ -42,13 +43,6 @@ async function fetchGoldPrice(dateRange: string) {
     return await response.json();
 }
 
-function parseYYYYMMDD(str: string) {
-    const y = str.slice(0, 4)
-    const m = str.slice(4, 6)
-    const d = str.slice(6, 8)
-    return new Date(`${y}-${m}-${d}`)
-}
-
 export default function GoldPrice() {
     const [dateRange, setDateRange] = useState("1")
     const [dataLoading, setDataLoading] = useState(false)
@@ -61,7 +55,6 @@ export default function GoldPrice() {
         setDataLoading(true)
 
         fetchGoldPrice(dateRange).then(data => {
-            console.log(data)
             const prices = data["bizResult"]["data"]["priceList"].map((item: GoldPriceDTO) => {
                 return {
                     time: dateRange === "0" ? item.time : parseYYYYMMDD(item.time).toLocaleDateString("en-US", {
@@ -103,7 +96,8 @@ export default function GoldPrice() {
             }
 
             setDataLoading(false)
-        }).catch(() => {
+        }).catch((ex) => {
+            console.error(ex)
             setDataLoading(false)
             toast.error("Failed to fetch gold price data")
         })
@@ -146,15 +140,15 @@ export default function GoldPrice() {
                     </Select>
                 </CardAction>
             </CardHeader>
-            <CardContent className={"pl-4 pr-3 relative"}>
+            <CardContent className={"px-4 relative"}>
                 {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
                 <ChartContainer config={chartConfig}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
                         margin={{
-                            left: 10,
-                            right: 10,
+                            left: 5,
+                            right: 5,
                         }}
                     >
                         <defs>
@@ -172,7 +166,7 @@ export default function GoldPrice() {
                             </linearGradient>
                         </defs>
                         <CartesianGrid vertical={false}/>
-                        <YAxis domain={['dataMin', 'dataMax']} hide={true}/>
+                        <YAxis domain={['dataMin - 10', 'dataMax + 10']} hide={true}/>
                         <XAxis
                             dataKey="time"
                             tickLine={false}

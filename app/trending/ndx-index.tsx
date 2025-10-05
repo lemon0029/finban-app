@@ -18,6 +18,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import {toast} from "sonner";
+import {getDateRangeLabel} from "@/lib/utils";
 
 
 const NDXChartConfig = {
@@ -35,7 +36,7 @@ async function fetchNDXData(dateRange: string) {
 
     const today = new Date();
     let fromDate: string;
-    if (dateRange === "5d") {
+    if (dateRange === "1w") {
         const pastDate = new Date();
         pastDate.setDate(today.getDate() - 7); // 7天前，考虑到周末
         fromDate = pastDate.toISOString().split('T')[0];
@@ -111,24 +112,13 @@ export default function NDXIndex() {
 
             if (dateRange === "1d") {
                 setTimeAsOf(data["data"]["timeAsOf"])
-            } else if (dateRange === "5d") {
-                setTimeAsOf("the past 5 days")
-            } else if (dateRange === "1m") {
-                setTimeAsOf("the past month")
-            } else if (dateRange === "6m") {
-                setTimeAsOf("the past 6 months")
-            } else if (dateRange === "ytd") {
-                setTimeAsOf("the year to date")
-            } else if (dateRange === "1y") {
-                setTimeAsOf("the past year")
-            } else if (dateRange === "5y") {
-                setTimeAsOf("the past 5 years")
             } else {
-                setTimeAsOf("the past 10 years")
+                setTimeAsOf(getDateRangeLabel(dateRange))
             }
 
             setDataLoading(false)
-        }).catch(() => {
+        }).catch((ex) => {
+            console.error(ex)
             setDataLoading(false)
             toast.error("Failed to fetch NDX data")
         })
@@ -151,7 +141,7 @@ export default function NDXIndex() {
                             <SelectGroup>
                                 <SelectLabel>Period</SelectLabel>
                                 <SelectItem value="1d">1D</SelectItem>
-                                <SelectItem value="5d">5D</SelectItem>
+                                <SelectItem value="1w">1W</SelectItem>
                                 <SelectItem value="1m">1M</SelectItem>
                                 <SelectItem value="6m">6M</SelectItem>
                                 <SelectItem value="ytd">YTD</SelectItem>
@@ -163,16 +153,15 @@ export default function NDXIndex() {
                     </Select>
                 </CardAction>
             </CardHeader>
-            <CardContent className={"pl-4 pr-3 relative"}>
+            <CardContent className={"px-4 relative"}>
                 {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
                 <ChartContainer config={NDXChartConfig}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
                         margin={{
-                            left: 10,
-                            right: 10,
-                            top: 2,
+                            left: 5,
+                            right: 5,
                         }}
                     >
                         <defs>
@@ -190,7 +179,7 @@ export default function NDXIndex() {
                             </linearGradient>
                         </defs>
                         <CartesianGrid vertical={false}/>
-                        <YAxis domain={['dataMin', 'dataMax']} hide={true}/>
+                        <YAxis domain={['dataMin - 10', 'dataMax + 10']} hide={true}/>
                         <XAxis
                             dataKey="time"
                             tickLine={false}
