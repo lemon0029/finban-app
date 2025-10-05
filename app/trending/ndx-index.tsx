@@ -113,6 +113,7 @@ export default function NDXIndex() {
             if (dateRange === "1d") {
                 setTimeAsOf(data["data"]["timeAsOf"])
             } else {
+                setPreviousClose(0)
                 setTimeAsOf(getDateRangeLabel(dateRange))
             }
 

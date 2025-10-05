@@ -32,6 +32,7 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {Spinner} from "@/components/ui/spinner";
 import {Empty, EmptyDescription, EmptyTitle} from "@/components/ui/empty";
 import {Item, ItemActions, ItemContent, ItemFooter, ItemGroup, ItemSeparator, ItemTitle} from "@/components/ui/item";
+import {toast} from "sonner";
 
 async function fetchProducts() {
     const baseUrl = process.env.API_BASE_URL
@@ -119,7 +120,7 @@ function AddProductDialog() {
                     <Button
                         size="icon-sm"
                         variant="outline"
-                        className={`rounded-full ${selectedProducts.has(item.code) ? "bg-accent" : ""}`}
+                        className={`rounded-full`}
                         aria-label="Invite"
                         onClick={() => {
                             const newSet = new Set(selectedProducts)
@@ -239,9 +240,19 @@ function AddProductDialog() {
 export default function ProductList() {
     const [searchTerm, setSearchTerm] = useState("")
     const [products, setProducts] = useState<ProductDTO[]>([])
+    const [productLoading, setProductLoading] = useState(false)
 
     useEffect(() => {
-        fetchProducts().then(data => setProducts(data))
+        setProductLoading(true)
+        fetchProducts()
+            .then(data => {
+                setProducts(data)
+                setProductLoading(false)
+            })
+            .catch((ex) => {
+                console.error(ex)
+                toast.error("Failed to fetch products")
+            })
     }, [])
 
     const filteredProducts = products.filter(product =>
@@ -284,7 +295,7 @@ export default function ProductList() {
             </div>
 
             {
-                products.length == 0 && (
+                productLoading && (
                     <div>
                         <p className="text-muted-foreground ml-1 mb-3">加载产品数据中...</p>
                         <div className="flex flex-col gap-2">
@@ -305,7 +316,7 @@ export default function ProductList() {
             }
 
             {
-                filteredProducts.length == 0 ? (
+                filteredProducts.length == 0 && !productLoading ? (
                     <Empty>
                         <EmptyTitle>No data</EmptyTitle>
                         <EmptyDescription>No products found, try adjusting your search or add new
