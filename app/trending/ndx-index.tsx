@@ -27,7 +27,7 @@ const NDXChartConfig = {
     },
 } satisfies ChartConfig
 
-async function fetchData(dateRange: string) {
+async function fetchNDXData(dateRange: string) {
     if (dateRange == "1d") {
         const response = await fetch("/api/quote/NDX/chart?assetclass=index");
         return await response.json();
@@ -83,7 +83,7 @@ export default function NDXIndex() {
     useEffect(() => {
         setDataLoading(true)
 
-        fetchData(dateRange).then(data => {
+        fetchNDXData(dateRange).then(data => {
             const sortedData = data["data"]["chart"].sort((a: never, b: never) => a["x"] - b["x"]);
             const prices = sortedData.map((item: never) => {
                 return {
@@ -176,7 +176,7 @@ export default function NDXIndex() {
                         }}
                     >
                         <defs>
-                            <linearGradient id="fillPrice1" x1="0" y1="0" x2="0" y2="1">
+                            <linearGradient id="ndx-chart-fill-color" x1="0" y1="0" x2="0" y2="1">
                                 <stop
                                     offset="5%"
                                     stopColor="var(--color-price)"
@@ -213,7 +213,7 @@ export default function NDXIndex() {
                             dataKey="price"
                             type="natural"
                             stroke="var(--color-price)"
-                            fill="url(#fillPrice1)"
+                            fill="url(#ndx-chart-fill-color)"
                             strokeWidth={2}
                             dot={false}
                         />
