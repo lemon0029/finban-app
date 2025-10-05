@@ -23,7 +23,7 @@ import {getDateRangeLabel} from "@/lib/utils";
 
 const NDXChartConfig = {
     price: {
-        label: "Price",
+        label: "Value",
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig

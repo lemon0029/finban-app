@@ -23,7 +23,7 @@ import {getDateRangeLabel, parseYYYYMMDD, parseYYYYMMDDHHMM} from "@/lib/utils";
 
 const CSI300ChartConfig = {
     price: {
-        label: "Price",
+        label: "Value",
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig

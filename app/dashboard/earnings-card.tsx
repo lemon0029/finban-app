@@ -8,15 +8,14 @@ import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
 
-
-const chartConfig = {
-    value: {
-        label: "累计收益",
-        color: "var(--color-profit)",
-    }
-} satisfies ChartConfig
-
 export function EarningsCard() {
+
+    const chartConfig = {
+        value: {
+            label: "累计收益",
+            color: "var(--color-profit)",
+        }
+    } satisfies ChartConfig
 
     const rawData = []
 
@@ -53,8 +52,8 @@ export function EarningsCard() {
             : ""
 
     return (
-        <Card className="pt-4 pb-2 gap-2">
-            <CardHeader className="px-4">
+        <Card className="pt-4 pb-2 gap-2 shadow-xs">
+            <CardHeader className="px-4 gap-1">
                 <CardDescription>总金额</CardDescription>
                 <CardTitle className="text-2xl">
                     {moneyFormatter(1234567.891233)}
@@ -75,7 +74,8 @@ export function EarningsCard() {
                     </div>
                     <div className="col-span-1">
                         <CardDescription className="text-[11px] underline underline-offset-4">
-                            <div className={`flex items-center ${sd.earnings_rate > 0 ? "text-[var(--color-profit)]" : sd.earnings_rate < 0 ? "text-[var(--color-loss)]" : "text-muted-foreground"}`}>
+                            <div
+                                className={`flex items-center ${sd.earnings_rate > 0 ? "text-[var(--color-profit)]" : sd.earnings_rate < 0 ? "text-[var(--color-loss)]" : "text-muted-foreground"}`}>
                                 {sd.earnings_rate > 0 ?
                                     <TrendingUp className="mr-1" size={12}/> :
                                     <TrendingUp className="mr-1 rotate-180" size={12}/>}
@@ -91,7 +91,7 @@ export function EarningsCard() {
                 </div>
             </CardHeader>
             <CardContent className="px-1">
-                <ChartContainer config={chartConfig} className={"h-[150px] w-full"}>
+                <ChartContainer config={chartConfig} className={"h-[120px] w-full"}>
                     <AreaChart
                         accessibilityLayer
                         data={rawData}
