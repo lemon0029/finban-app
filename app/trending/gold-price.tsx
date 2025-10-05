@@ -17,6 +17,7 @@ import {
 import {useEffect, useState} from "react";
 import {GoldPriceDTO} from "@/lib/types";
 import {Spinner} from "@/components/ui/spinner";
+import {Badge} from "@/components/ui/badge";
 
 
 const chartConfig = {
@@ -82,10 +83,10 @@ export default function GoldPrice() {
     const dateRangeLabel = () => {
         switch (dateRange) {
             case "0": return "today";
-            case "1": return "past month";
-            case "3": return "past 3 months";
-            case "6": return "past 6 months";
-            case "12": return "past year";
+            case "1": return "the past month";
+            case "3": return "the past 3 months";
+            case "6": return "the past 6 months";
+            case "12": return "the past year";
             default: return "unknown period";
         }
     }
@@ -100,24 +101,24 @@ export default function GoldPrice() {
                             onValueChange={(value) => {
                                 setDateRange(value);
                             }}>
-                        <SelectTrigger className="w-[90px]">
+                        <SelectTrigger className="w-[80px]">
                             <SelectValue/>
                         </SelectTrigger>
                         <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-0">
                             <SelectGroup>
-                                <SelectLabel>时间范围</SelectLabel>
-                                <SelectItem value="0">实时</SelectItem>
-                                <SelectItem value="1">近一月</SelectItem>
-                                <SelectItem value="3">近三月</SelectItem>
-                                <SelectItem value="6">近半年</SelectItem>
-                                <SelectItem value="12">近一年</SelectItem>
+                                <SelectLabel>Period</SelectLabel>
+                                <SelectItem value="0">1D</SelectItem>
+                                <SelectItem value="1">1M</SelectItem>
+                                <SelectItem value="3">3M</SelectItem>
+                                <SelectItem value="6">6M</SelectItem>
+                                <SelectItem value="12">1Y</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
                 </CardAction>
             </CardHeader>
             <CardContent className={"pl-4 pr-3 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8"}/>)}
+                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
                 <ChartContainer config={chartConfig}>
                     <AreaChart
                         accessibilityLayer
@@ -166,13 +167,17 @@ export default function GoldPrice() {
                     </AreaChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-                <div className="flex gap-2 leading-none font-medium">
-                    <div className={"flex justify-start"}>
-                        <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={`text-[${chartConfig.price.color}]`}>{pctChange.toFixed(1)}%</span> in the {dateRangeLabel()}</span>
-                        {pctChange > 0 ? <TrendingUp className="h-4 w-4 ml-1"/> : <TrendingDown className={"h-4 w-4 ml-1"}/>}
-                    </div>
-                </div>
+            <CardFooter className="flex-col items-start text-xs lg:text-sm">
+                {
+                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner className={"mr-2"}/> Updating...</div>) : (
+                        <div className="flex gap-2 leading-none font-medium">
+                            <div className={"flex justify-start items-center"}>
+                                {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> : <TrendingDown className={"h-4 w-4 mr-1"}/>}
+                                <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={`text-[${chartConfig.price.color}]`}>{pctChange.toFixed(1)}%</span> in <Badge variant={"outline"}>{dateRangeLabel()}</Badge></span>
+                            </div>
+                        </div>
+                    )
+                }
             </CardFooter>
         </Card>
     )

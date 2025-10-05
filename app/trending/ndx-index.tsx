@@ -3,11 +3,20 @@
 import {TrendingDown, TrendingUp} from "lucide-react"
 import {Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis} from "recharts"
 
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card"
+import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
 import {useEffect, useState} from "react";
 import {Spinner} from "@/components/ui/spinner";
 import {Badge} from "@/components/ui/badge";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 
 
 const NDXChartConfig = {
@@ -17,8 +26,48 @@ const NDXChartConfig = {
     },
 } satisfies ChartConfig
 
-async function fetchData() {
-    const response = await fetch("/api/quote/NDX/chart?assetclass=index");
+async function fetchData(dateRange: string) {
+    if (dateRange == "1d") {
+        const response = await fetch("/api/quote/NDX/chart?assetclass=index");
+        return await response.json();
+    }
+
+    const today = new Date();
+    let fromDate: string;
+    if (dateRange === "5d") {
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - 7); // 7天前，考虑到周末
+        fromDate = pastDate.toISOString().split('T')[0];
+    } else if (dateRange === "1m") {
+        const pastDate = new Date();
+        pastDate.setMonth(today.getMonth() - 1);
+        fromDate = pastDate.toISOString().split('T')[0];
+    } else if (dateRange === "6m") {
+        const pastDate = new Date();
+        pastDate.setMonth(today.getMonth() - 6);
+        fromDate = pastDate.toISOString().split('T')[0];
+    } else if (dateRange === "ytd") {
+        const pastDate = new Date(today.getFullYear(), 0, 1);
+        fromDate = pastDate.toISOString().split('T')[0];
+    } else if (dateRange === "1y") {
+        const pastDate = new Date();
+        pastDate.setFullYear(today.getFullYear() - 1);
+        fromDate = pastDate.toISOString().split('T')[0];
+    } else if (dateRange === "5y") {
+        const pastDate = new Date();
+        pastDate.setFullYear(today.getFullYear() - 5);
+        fromDate = pastDate.toISOString().split('T')[0];
+    } else { // 10y
+        const pastDate = new Date();
+        pastDate.setFullYear(today.getFullYear() - 10);
+        fromDate = pastDate.toISOString().split('T')[0];
+    }
+
+    const endDate = today.toISOString().split('T')[0];
+
+    const response = await fetch(`/api/quote/NDX/chart?assetclass=index&fromdate=${fromDate}&todate=${endDate}`, {
+        next: {revalidate: 3600}
+    });
     return await response.json();
 }
 
@@ -28,11 +77,12 @@ export default function NDXIndex() {
     const [pctChange, setPctChange] = useState(0)
     const [timeAsOf, setTimeAsOf] = useState("")
     const [previousClose, setPreviousClose] = useState(0)
+    const [dateRange, setDateRange] = useState("1d")
 
     useEffect(() => {
         setDataLoading(true)
 
-        fetchData().then(data => {
+        fetchData(dateRange).then(data => {
             const sortedData = data["data"]["chart"].sort((a: never, b: never) => a["x"] - b["x"]);
             const prices = sortedData.map((item: never) => {
                 return {
@@ -41,10 +91,15 @@ export default function NDXIndex() {
                 }
             })
 
-            const pctChange = data["data"]["percentageChange"];
-            setPctChange(pctChange)
+            setPctChange(data["data"]["percentageChange"])
 
-            if (pctChange >= 0) {
+            if (prices.length >= 2) {
+                const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
+                setPctChange(change)
+            }
+
+            const deltaIndicator = data["data"]["deltaIndicator"];
+            if (deltaIndicator === "up") {
                 NDXChartConfig.price.color = "var(--color-profit)"
             } else {
                 NDXChartConfig.price.color = "var(--color-loss)"
@@ -52,20 +107,60 @@ export default function NDXIndex() {
 
             setChartData(prices)
             setPreviousClose(parseFloat(data["data"]["previousClose"].replace(/,/g, '')))
-            setTimeAsOf(data["data"]["timeAsOf"])
-            setDataLoading(false)
 
+            if (dateRange === "1d") {
+                setTimeAsOf(data["data"]["timeAsOf"])
+            } else if (dateRange === "5d") {
+                setTimeAsOf("the past 5 days")
+            } else if (dateRange === "1m") {
+                setTimeAsOf("the past month")
+            } else if (dateRange === "6m") {
+                setTimeAsOf("the past 6 months")
+            } else if (dateRange === "ytd") {
+                setTimeAsOf("the year to date")
+            } else if (dateRange === "1y") {
+                setTimeAsOf("the past year")
+            } else if (dateRange === "5y") {
+                setTimeAsOf("the past 5 years")
+            } else {
+                setTimeAsOf("the past 10 years")
+            }
+
+            setDataLoading(false)
         })
-    }, [])
+    }, [dateRange])
 
     return (
         <Card>
             <CardHeader>
                 <CardTitle>NDX</CardTitle>
                 <CardDescription>The Nasdaq-100 Index</CardDescription>
+                <CardAction>
+                    <Select value={dateRange}
+                            onValueChange={(value) => {
+                                setDateRange(value);
+                            }}>
+                        <SelectTrigger className="w-[80px]">
+                            <SelectValue/>
+                        </SelectTrigger>
+                        <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-0">
+                            <SelectGroup>
+                                <SelectLabel>Period</SelectLabel>
+                                <SelectItem value="1d">1D</SelectItem>
+                                <SelectItem value="5d">5D</SelectItem>
+                                <SelectItem value="1m">1M</SelectItem>
+                                <SelectItem value="6m">6M</SelectItem>
+                                <SelectItem value="ytd">YTD</SelectItem>
+                                <SelectItem value="1y">1Y</SelectItem>
+                                <SelectItem value="5y">5Y</SelectItem>
+                                <SelectItem value="10y">10Y</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </CardAction>
             </CardHeader>
             <CardContent className={"pl-4 pr-3 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8"}/>)}
+                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
                 <ChartContainer config={NDXChartConfig}>
                     <AreaChart
                         accessibilityLayer
@@ -73,6 +168,7 @@ export default function NDXIndex() {
                         margin={{
                             left: 10,
                             right: 10,
+                            top: 2,
                         }}
                     >
                         <defs>
@@ -96,7 +192,14 @@ export default function NDXIndex() {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={10}
-                            tickFormatter={(value: string) => value.slice(0, value.length - 3)}
+                            tickFormatter={(value: string) => {
+                                switch (dateRange) {
+                                    case "1d":
+                                        return value.slice(0, value.length - 3)
+                                    default:
+                                        return value
+                                }
+                            }}
                         />
                         <ChartTooltip
                             cursor={false}
@@ -120,18 +223,25 @@ export default function NDXIndex() {
                     </AreaChart>
                 </ChartContainer>
             </CardContent>
-            <CardFooter className="flex-col items-start gap-2 text-sm">
-                <div className="flex gap-2 leading-none font-medium">
-                    <div className={"flex justify-start items-center"}>
-                        <div>
-                            {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
-                                <TrendingDown className={"h-4 w-4 mr-1"}/>}
-                        </div>
-                        <span>
-                            {pctChange >= 0 ? "Trending up" : "Trending down"} by <span className={`text-[${NDXChartConfig.price.color}]`}>{pctChange}</span> in <Badge variant={"outline"}>{timeAsOf}</Badge>
+            <CardFooter className="flex-col items-start text-xs lg:text-sm">
+                {
+                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner
+                        className={"mr-2"}/> Updating...</div>) : (
+                        <div className="flex gap-2 leading-none font-medium">
+                            <div className={"flex justify-start items-center"}>
+                                <div>
+                                    {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
+                                        <TrendingDown className={"h-4 w-4 mr-1"}/>}
+                                </div>
+                                <span>
+                            {pctChange >= 0 ? "Trending up" : "Trending down"} by <span
+                                    className={`text-[${NDXChartConfig.price.color}]`}>{pctChange.toFixed(2)}%</span> in <Badge
+                                    variant={"outline"}>{timeAsOf}</Badge>
                         </span>
-                    </div>
-                </div>
+                            </div>
+                        </div>
+                    )
+                }
             </CardFooter>
         </Card>
     )
