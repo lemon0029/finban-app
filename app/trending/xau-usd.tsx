@@ -223,7 +223,7 @@ export default function GoldSpot() {
             <CardContent className={"px-4 relative"}>
                 {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
                 {!dataLoading && latestPrice && (
-                    <Badge variant={"outline"} className={"absolute left-6"}>
+                    <Badge variant={"outline"} className={"absolute left-6 top-1"}>
                         <AnimatedNumber value={latestPrice}/>
                         <span className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>
                             ({previousClose && latestPrice - previousClose > 0 ? "+" : ""}

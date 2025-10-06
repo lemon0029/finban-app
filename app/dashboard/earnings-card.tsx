@@ -7,6 +7,7 @@ import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} 
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
 import {Button} from "@/components/ui/button";
 import {Separator} from "@/components/ui/separator";
+import Link from "next/link";
 
 export function EarningsCard() {
 
@@ -132,14 +133,18 @@ export function EarningsCard() {
 
             <CardFooter className={"px-4"}>
                 <div className="flex w-full justify-end space-x-2">
-                    <Button variant="outline" size="sm">
-                        <FileTextIcon/>
-                        交易记录
-                    </Button>
-                    <Button variant="outline" size="sm">
-                        <ChartAreaIcon/>
-                        收益明细
-                    </Button>
+                    <Link href={"/transactions"}>
+                        <Button variant="outline" size="sm">
+                            <FileTextIcon/>
+                            交易记录
+                        </Button>
+                    </Link>
+                    <Link href={"/earnings"}>
+                        <Button variant="outline" size="sm">
+                            <ChartAreaIcon/>
+                            收益明细
+                        </Button>
+                    </Link>
                 </div>
             </CardFooter>
         </Card>

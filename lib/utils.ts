@@ -28,7 +28,7 @@ export function getDateRangeLabel(dateRange: string) {
         return new Date().toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",
-            day: "2-digit"
+            day: "numeric"
         })
     }
 

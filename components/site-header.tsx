@@ -71,7 +71,7 @@ export function SiteHeader() {
         }
 
         if (pathname == "/trending") {
-            return "Trending"
+            return "Trending View"
         }
 
         return "Page"

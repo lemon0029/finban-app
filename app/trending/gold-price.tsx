@@ -104,7 +104,7 @@ export default function GoldPrice() {
     return (
         <Card className={"gap-4"}>
             <CardHeader>
-                <CardTitle>Gold Price</CardTitle>
+                <CardTitle>CMB Gold Price</CardTitle>
                 <CardDescription>From China Merchants Bank</CardDescription>
                 <CardAction>
                     <Select value={dateRange}

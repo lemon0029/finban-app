@@ -52,17 +52,15 @@ const data = {
             icon: IconDatabase,
         },
         {
-            title: "Gain Calculator",
-            url: "/calculator",
-            icon: CalculatorIcon,
-            external: true,
-        },
-        {
             title: "Trending View",
             url: "/trending",
             icon: ChartCandlestickIcon,
-            external: true,
-        }
+        },
+        {
+            title: "Gain Calculator",
+            url: "/calculator",
+            icon: CalculatorIcon,
+        },
     ],
     navSecondary: [
         {
@@ -95,7 +93,7 @@ export function AppSidebar({...props}: React.ComponentProps<typeof Sidebar>) {
                         >
                             <Link href="/" className="flex items-center gap-2">
                                 <FactoryIcon className="!size-5"/>
-                                <span className="text-base font-semibold">FinBoard</span>
+                                <span className="text-base font-semibold">finban-app</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
