@@ -18,16 +18,7 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog";
 import {useMediaQuery} from "@/hooks/use-media-query";
-import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-    DrawerTrigger
-} from "@/components/ui/drawer";
+import {Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTrigger} from "@/components/ui/drawer";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Spinner} from "@/components/ui/spinner";
 import {Empty, EmptyDescription, EmptyTitle} from "@/components/ui/empty";
@@ -55,20 +46,24 @@ function AddProductDialog() {
 
         setIsSearching(true)
 
-        searchProducts(searchTerm).then((data) => {
-            setSearchResults(data.map((item: { [x: string]: never; }) => {
-                const fundBaseInfo = item["unMappedProperties"]["FundBaseInfo"]
-                return {
-                    id: item["unMappedProperties"]["_id"],
-                    name: item["NAME"],
-                    code: item["CODE"],
-                    fundType: fundBaseInfo["FTYPE"],
-                    nav: fundBaseInfo["DWJZ"]
-                }
-            }))
+        searchProducts(searchTerm)
+            .then((data) => {
+                setSearchResults(data.map((item: { [x: string]: never; }) => {
+                    return {
+                        id: item["_id"],
+                        name: item["NAME"],
+                        code: item["CODE"],
+                        fundType: item["fundType"] || item["CATEGORYDESC"],
+                        nav: item["nav"] || '-/-'
+                    }
+                }))
 
-            setIsSearching(false)
-        })
+                setIsSearching(false)
+            })
+            .catch(ex => {
+                console.log(ex)
+                toast.error("Failed to invoke search action")
+            })
     }
 
     const searchInputArea = (<div className="flex items-center gap-2">
@@ -91,16 +86,16 @@ function AddProductDialog() {
                   className={"py-3 px-1 rounded-none"}>
                 <ItemContent>
                     <ItemTitle className={"mb-1"}>{item.name}</ItemTitle>
-                    <ItemFooter className={"grid grid-cols-4"}>
-                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-1">
+                    <ItemFooter className={"grid grid-cols-11"}>
+                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-4">
                             <Code className="h-3 w-3 mr-1"/> {item.code}
                         </div>
 
-                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-1">
+                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-3">
                             <Activity className="h-3 w-3 mr-1"/> {item.nav}
                         </div>
 
-                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-2">
+                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-4">
                             <Tag className="h-3 w-3 mr-1"/> {item.fundType}
                         </div>
                     </ItemFooter>
@@ -148,9 +143,9 @@ function AddProductDialog() {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[650px]">
                     <DialogHeader>
-                        <DialogTitle>添加基金产品</DialogTitle>
+                        <DialogTitle>添加基金/理财产品</DialogTitle>
                         <DialogDescription>
-                            搜索第三方平台的基金产品并添加到您的列表中
+                            聚合搜索多平台销售的基金/理财产品
                         </DialogDescription>
                     </DialogHeader>
 
@@ -193,10 +188,10 @@ function AddProductDialog() {
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader className="text-left">
-                    <DrawerTitle>添加基金产品</DrawerTitle>
-                    <DrawerDescription>
-                        搜索第三方平台的基金产品并添加到您的列表中
-                    </DrawerDescription>
+                    <DialogTitle className={"mb-1"}>添加基金/理财产品</DialogTitle>
+                    <DialogDescription>
+                        聚合搜索多平台销售的基金/理财产品
+                    </DialogDescription>
                 </DrawerHeader>
 
                 <div className="grid gap-4 px-4 h-2/3">

@@ -2,8 +2,9 @@
 
 import {BarChart3, Calendar, Code, TrendingDown, TrendingUp} from "lucide-react";
 import {ProductDTO} from "@/lib/types";
-import {Item, ItemContent, ItemFooter, ItemTitle} from "@/components/ui/item";
+import {Item, ItemContent, ItemTitle} from "@/components/ui/item";
 import React from "react";
+import Link from "next/link";
 
 function Nav({value}: { value: number }) {
     return (
@@ -39,11 +40,18 @@ function Change({value}: { value: number }) {
 
 export function Product(product: ProductDTO) {
     return (
-        <Item variant="outline" key={product.code} className={"gap-2 p-3"}>
-            <ItemContent>
-                <ItemTitle>{product.name}</ItemTitle>
-                <ItemFooter className="flex items-center text-xs mt-2">
-                    <div className="flex gap-10">
+        <Link href={`/products/${product.code}`}>
+            <Item variant="outline" key={product.code} className={"gap-1 p-3"}>
+                <ItemTitle className={"flex justify-between w-full overflow-hidden"}>
+                    <div className={"w-3/4 line-clamp-1"}>
+                        {product.name}
+                    </div>
+                    <div className="w-1/4 flex items-center justify-end text-xs text-muted-foreground">
+                        <Code className="h-3 w-3 mr-1"/> {product.code}
+                    </div>
+                </ItemTitle>
+                <ItemContent>
+                    <div className="grid grid-cols-3 text-xs mt-2">
                         <div className="flex flex-col">
                             <span className="text-xs text-muted-foreground flex items-center">
                                 <Calendar className="h-3 w-3 mr-1"/>日期
@@ -55,13 +63,8 @@ export function Product(product: ProductDTO) {
                         <Nav value={product.latestNav.value}/>
                         <Change value={product.latestNav.pctChange}/>
                     </div>
-                </ItemFooter>
-            </ItemContent>
-            <ItemContent className={"self-start"}>
-                <div className="flex justify-end items-center text-xs text-muted-foreground">
-                    <Code className="h-3 w-3 mr-1"/> {product.code}
-                </div>
-            </ItemContent>
-        </Item>
+                </ItemContent>
+            </Item>
+        </Link>
     )
 }
