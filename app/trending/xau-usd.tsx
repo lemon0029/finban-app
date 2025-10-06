@@ -39,108 +39,117 @@ export default function GoldSpot() {
     useEffect(() => {
         setDataLoading(true)
 
-        let prices = [] as { time: string; price: number }[]
+        const updateData = () => {
 
-        fetchXAUUSDData(dateRange).then(data => {
-            if (dateRange === "1d") {
-                const values = data["values"]
-                const c = values["c"]
-                const t = values["t"]
+            let prices = [] as { time: string; price: number }[]
 
-                for (let i = 0; i < c.length; i++) {
-                    const date = new Date(t[i] * 1000)
-                    const formattedTime = date.toLocaleDateString("en-US", {
-                        minute: "2-digit",
-                        hour: "numeric"
-                    })
+            fetchXAUUSDData(dateRange).then(data => {
+                if (dateRange === "1d") {
+                    const values = data["values"]
+                    const c = values["c"]
+                    const t = values["t"]
 
-                    prices.push({
-                        time: formattedTime,
-                        price: c[i]
-                    })
-                }
-            } else {
-                prices = data["data"].map((item: never[]) => {
-                    const date = new Date(item[0])
-                    let formattedTime
-
-                    if (dateRange === "1w") {
-                        formattedTime = date.toLocaleDateString("en-US", {
+                    for (let i = 0; i < c.length; i++) {
+                        const date = new Date(t[i] * 1000)
+                        const formattedTime = date.toLocaleDateString("en-US", {
                             minute: "2-digit",
-                            hour: "numeric",
-                            day: "numeric",
-                            month: "short",
+                            hour: "numeric"
                         })
-                    } else if (dateRange === "1m") {
-                        formattedTime = date.toLocaleDateString("en-US", {
-                            hour: "2-digit",
-                            day: "numeric",
-                            month: "short",
+
+                        prices.push({
+                            time: formattedTime,
+                            price: c[i]
                         })
-                    } else if (dateRange === "3m" || dateRange === "6m") {
-                        formattedTime = date.toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                        })
-                    } else if (dateRange == "1y") {
-                        formattedTime = date.toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                        })
-                    } else if (dateRange === "5y" || dateRange === "max") {
-                        formattedTime = date.toLocaleDateString("en-US", {
-                            month: "short",
-                            year: "numeric",
-                        })
-                    }
-                    return {
-                        time: formattedTime,
-                        price: item[1]
-                    }
-                })
-            }
-
-            setChartData(prices)
-
-            if (dateRange === "1d") {
-                if (prices.length > 1 && prices[prices.length - 1]) {
-                    setLatestPrice(prices[prices.length - 1].price)
-                }
-
-                console.log(data)
-                const configs = data["config"]
-                setPreviousClose(parseFloat(configs["lastClose"]))
-                setPctChange(parseFloat(configs["changePcr"]))
-            } else {
-                setLatestPrice(null)
-                setPreviousClose(null)
-
-                if (prices.length >= 2) {
-                    const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
-                    setPctChange(change)
-
-                    if (change >= 0) {
-                        XAU_USD_CHART_CONFIG.price.color = "var(--color-profit)"
-                    } else {
-                        XAU_USD_CHART_CONFIG.price.color = "var(--color-loss)"
                     }
                 } else {
-                    setPctChange(0)
-                }
-            }
+                    prices = data["data"].map((item: never[]) => {
+                        const date = new Date(item[0])
+                        let formattedTime
 
-            setDataLoading(false)
-        }).catch((ex) => {
-            console.error(ex)
-            setDataLoading(false)
-            toast.error("Failed to fetch gold price data")
-        })
+                        if (dateRange === "1w") {
+                            formattedTime = date.toLocaleDateString("en-US", {
+                                minute: "2-digit",
+                                hour: "numeric",
+                                day: "numeric",
+                                month: "short",
+                            })
+                        } else if (dateRange === "1m") {
+                            formattedTime = date.toLocaleDateString("en-US", {
+                                hour: "2-digit",
+                                day: "numeric",
+                                month: "short",
+                            })
+                        } else if (dateRange === "3m" || dateRange === "6m") {
+                            formattedTime = date.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                            })
+                        } else if (dateRange == "1y") {
+                            formattedTime = date.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                            })
+                        } else if (dateRange === "5y" || dateRange === "max") {
+                            formattedTime = date.toLocaleDateString("en-US", {
+                                month: "short",
+                                year: "numeric",
+                            })
+                        }
+                        return {
+                            time: formattedTime,
+                            price: item[1]
+                        }
+                    })
+                }
+
+                setChartData(prices)
+
+                if (dateRange === "1d") {
+                    if (prices.length > 1 && prices[prices.length - 1]) {
+                        setLatestPrice(prices[prices.length - 1].price)
+                    }
+
+                    const configs = data["config"]
+                    setPreviousClose(parseFloat(configs["lastClose"]))
+                    setPctChange(parseFloat(configs["changePcr"]))
+                } else {
+                    setLatestPrice(null)
+                    setPreviousClose(null)
+
+                    if (prices.length >= 2) {
+                        const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
+                        setPctChange(change)
+
+                        if (change >= 0) {
+                            XAU_USD_CHART_CONFIG.price.color = "var(--color-profit)"
+                        } else {
+                            XAU_USD_CHART_CONFIG.price.color = "var(--color-loss)"
+                        }
+                    } else {
+                        setPctChange(0)
+                    }
+                }
+
+                setDataLoading(false)
+            }).catch((ex) => {
+                console.error(ex)
+                setDataLoading(false)
+                toast.error("Failed to fetch gold price data")
+            })
+        }
+
+        updateData()
+
+        if (dateRange === "1d") {
+            const interval = setInterval(updateData, 10 * 1000)
+            return () => clearInterval(interval)
+        }
 
     }, [dateRange])
 
     return (
-        <Card>
+        <Card className={"gap-4"}>
             <CardHeader>
                 <CardTitle>XAU/USD</CardTitle>
                 <CardDescription>Gold Spot US Dollar</CardDescription>

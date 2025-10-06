@@ -67,9 +67,6 @@ function IndexGroupDistributionChart({holdings}: { holdings: HoldingDTO[] }) {
     chartData.sort((a, b) => b.costAmount - a.costAmount)
     chartLegendConfig.sort((a, b) => b.costAmound - a.costAmound)
 
-    console.log(chartConfig)
-    console.log(chartData)
-
     return (
         <Card className="flex flex-col gap-3 rounded-sm pb-3">
             <CardHeader className="items-center pb-0 px-4">

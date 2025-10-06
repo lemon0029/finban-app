@@ -137,7 +137,7 @@ export default function CSI300Index() {
     }, [dateRange])
 
     return (
-        <Card>
+        <Card className={"gap-4"}>
             <CardHeader>
                 <CardTitle>000300.SH</CardTitle>
                 <CardDescription>The CSI 300 Index</CardDescription>

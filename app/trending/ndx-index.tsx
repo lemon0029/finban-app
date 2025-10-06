@@ -82,7 +82,7 @@ export default function NDXIndex() {
     }, [dateRange])
 
     return (
-        <Card>
+        <Card className={"gap-4"}>
             <CardHeader>
                 <CardTitle>NDX</CardTitle>
                 <CardDescription>The Nasdaq-100 Index</CardDescription>

@@ -13,7 +13,7 @@ export default function HoldingProducts({holdings}: { holdings: HoldingDTO[] }) 
             {
                 holdings.map(item =>
                     (<React.Fragment key={item.productCode}>
-                            <Card key={item.productCode} className={"gap-2 pb-2 pt-3 rounded-md shadow-xs"}>
+                            <Card key={item.productCode} className={"gap-1 pb-2 pt-3 rounded-md shadow-xs"}>
                                 <CardHeader className={"px-3"}>
                                     <CardTitle className={"text-sm"}>{item.productName}</CardTitle>
                                 </CardHeader>

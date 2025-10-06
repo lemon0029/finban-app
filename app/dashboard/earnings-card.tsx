@@ -1,7 +1,7 @@
 "use client"
 
 import {ChartAreaIcon, FileTextIcon, TrendingUp} from "lucide-react"
-import {Area, AreaChart, CartesianGrid} from "recharts"
+import {Area, AreaChart, CartesianGrid, YAxis} from "recharts"
 
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
@@ -108,6 +108,8 @@ export function EarningsCard() {
                                 <stop offset={100} stopColor="var(--color-loss)" stopOpacity={1}/>
                             </linearGradient>
                         </defs>
+
+                        <YAxis domain={['dataMin - 5', 'dataMax + 5']} hide={true}/>
 
                         <CartesianGrid vertical={false}/>
 

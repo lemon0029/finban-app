@@ -102,7 +102,7 @@ export default function GoldPrice() {
     }
 
     return (
-        <Card>
+        <Card className={"gap-4"}>
             <CardHeader>
                 <CardTitle>Gold Price</CardTitle>
                 <CardDescription>From China Merchants Bank</CardDescription>
