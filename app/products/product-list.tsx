@@ -86,16 +86,16 @@ function AddProductDialog() {
                   className={"py-3 px-1 rounded-none"}>
                 <ItemContent>
                     <ItemTitle className={"mb-1"}>{item.name}</ItemTitle>
-                    <ItemFooter className={"grid grid-cols-11"}>
-                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-4">
+                    <ItemFooter className={"flex w-full justify-between"}>
+                        <div className="flex justify-start items-center text-xs text-muted-foreground">
                             <Code className="h-3 w-3 mr-1"/> {item.code}
                         </div>
 
-                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-3">
+                        <div className="flex justify-start items-center text-xs text-muted-foreground">
                             <Activity className="h-3 w-3 mr-1"/> {item.nav}
                         </div>
 
-                        <div className="flex justify-start items-center text-xs text-muted-foreground col-span-4">
+                        <div className="flex justify-start items-center text-xs text-muted-foreground">
                             <Tag className="h-3 w-3 mr-1"/> {item.fundType}
                         </div>
                     </ItemFooter>

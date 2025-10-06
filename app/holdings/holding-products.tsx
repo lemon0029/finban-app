@@ -9,6 +9,11 @@ import {HoldingDTO} from "@/lib/types";
 import Link from "next/link";
 
 function HoldingProductCard({item}: { item: HoldingDTO }) {
+    const today = new Date()
+    const startHoldingDate = new Date(item.startHoldingDate)
+
+    const holdingDays = Math.ceil((today.getTime() - startHoldingDate.getTime()) / (1000 * 60 * 60 * 24))
+
     return (
         <Card key={item.productCode} className={"gap-2 pb-2 pt-3 rounded-md shadow-xs"}>
             <CardHeader className={"px-3 line-clamp-1"}>
@@ -49,10 +54,14 @@ function HoldingProductCard({item}: { item: HoldingDTO }) {
             <div className={"my-1 px-3"}>
                 <Separator/>
             </div>
-            <CardFooter className={"mb-0 px-3"}>
+            <CardFooter className={"mb-0 px-3 space-x-1"}>
                 <Badge variant={"secondary"}
                        className={"text-[10px] text-[var(--color-profit)]"}>
                     持有收益率 100%
+                </Badge>
+                <Badge variant={"secondary"}
+                       className={"text-[10px]"}>
+                    持有 {holdingDays} 天
                 </Badge>
             </CardFooter>
         </Card>
@@ -60,19 +69,23 @@ function HoldingProductCard({item}: { item: HoldingDTO }) {
 }
 
 export default function HoldingProducts({holdings}: { holdings: HoldingDTO[] }) {
+    holdings.sort((a, b) => b.costAmount - a.costAmount)
+
     return (
-        <ItemGroup className={"grid grid-cols-1 lg:grid-cols-3 gap-3"}>
-            {
-                holdings.map(item =>
-                    (
-                        <React.Fragment key={item.productCode}>
-                            <Link href={`/holdings/${item.productCode}`}>
-                                <HoldingProductCard item={item}/>
-                            </Link>
-                        </React.Fragment>
+        <>
+            <ItemGroup className={"grid grid-cols-1 lg:grid-cols-3 gap-3"}>
+                {
+                    holdings.map(item =>
+                        (
+                            <React.Fragment key={item.productCode}>
+                                <Link href={`/holdings/${item.productCode}`}>
+                                    <HoldingProductCard item={item}/>
+                                </Link>
+                            </React.Fragment>
+                        )
                     )
-                )
-            }
-        </ItemGroup>
+                }
+            </ItemGroup>
+        </>
     )
 }
