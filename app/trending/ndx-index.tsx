@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import {toast} from "sonner";
 import {getDateRangeLabel} from "@/lib/utils";
+import {fetchNDXData} from "@/lib/api";
 
 
 const NDXChartConfig = {
@@ -27,51 +28,6 @@ const NDXChartConfig = {
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig
-
-async function fetchNDXData(dateRange: string) {
-    if (dateRange == "1d") {
-        const response = await fetch("/api/quote/NDX/chart?assetclass=index");
-        return await response.json();
-    }
-
-    const today = new Date();
-    let fromDate: string;
-    if (dateRange === "1w") {
-        const pastDate = new Date();
-        pastDate.setDate(today.getDate() - 7); // 7天前，考虑到周末
-        fromDate = pastDate.toISOString().split('T')[0];
-    } else if (dateRange === "1m") {
-        const pastDate = new Date();
-        pastDate.setMonth(today.getMonth() - 1);
-        fromDate = pastDate.toISOString().split('T')[0];
-    } else if (dateRange === "6m") {
-        const pastDate = new Date();
-        pastDate.setMonth(today.getMonth() - 6);
-        fromDate = pastDate.toISOString().split('T')[0];
-    } else if (dateRange === "ytd") {
-        const pastDate = new Date(today.getFullYear(), 0, 1);
-        fromDate = pastDate.toISOString().split('T')[0];
-    } else if (dateRange === "1y") {
-        const pastDate = new Date();
-        pastDate.setFullYear(today.getFullYear() - 1);
-        fromDate = pastDate.toISOString().split('T')[0];
-    } else if (dateRange === "5y") {
-        const pastDate = new Date();
-        pastDate.setFullYear(today.getFullYear() - 5);
-        fromDate = pastDate.toISOString().split('T')[0];
-    } else { // 10y
-        const pastDate = new Date();
-        pastDate.setFullYear(today.getFullYear() - 10);
-        fromDate = pastDate.toISOString().split('T')[0];
-    }
-
-    const endDate = today.toISOString().split('T')[0];
-
-    const response = await fetch(`/api/quote/NDX/chart?assetclass=index&fromdate=${fromDate}&todate=${endDate}`, {
-        next: {revalidate: 3600}
-    });
-    return await response.json();
-}
 
 export default function NDXIndex() {
     const [dataLoading, setDataLoading] = useState(false)

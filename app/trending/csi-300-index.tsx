@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import {toast} from "sonner";
 import {getDateRangeLabel, parseYYYYMMDD, parseYYYYMMDDHHMM} from "@/lib/utils";
+import {fetchCSI300IndexData} from "@/lib/api";
 
 
 const CSI300ChartConfig = {
@@ -27,34 +28,6 @@ const CSI300ChartConfig = {
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig
-
-async function fetchCSI300IndexData(dateRange: string) {
-    if (dateRange == "1d") {
-        const response = await fetch("/appstock/app/minute/query?_var=min_data_sh000300&code=sh000300", {credentials: "omit"});
-        return await response.text();
-    } else if (dateRange === "1w") {
-        const response = await fetch("appstock/app/day/query?_var=fdays_data_sh000300&code=sh000300", {credentials: "omit"});
-        return await response.text();
-    } else {
-        let day: number = 30
-        if (dateRange === "1m") {
-            day = 30
-        } else if (dateRange === "3m") {
-            day = 90
-        } else if (dateRange === "6m") {
-            day = 180
-        } else if (dateRange === "1y") {
-            day = 320
-        } else if (dateRange === "3y") {
-            day = 1000
-        } else if (dateRange === "5y") {
-            day = 1600
-        }
-
-        const response = await fetch(`/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param=sh000300,day,,,${day},qfq`, {credentials: "omit"});
-        return await response.text();
-    }
-}
 
 export default function CSI300Index() {
     const [dataLoading, setDataLoading] = useState(false)

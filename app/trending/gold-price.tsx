@@ -20,6 +20,7 @@ import {Spinner} from "@/components/ui/spinner";
 import {Badge} from "@/components/ui/badge";
 import {toast} from "sonner";
 import {parseYYYYMMDD} from "@/lib/utils";
+import {fetchGoldPrice} from "@/lib/api";
 
 
 const chartConfig = {
@@ -28,20 +29,6 @@ const chartConfig = {
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig
-
-async function fetchGoldPrice(dateRange: string) {
-    if (dateRange === "0") {
-        const response = await fetch("/igoldaccount/golddetail/time-price", {method: "POST"});
-        return await response.json();
-    }
-
-    const response = await fetch("/igoldaccount/golddetail/history-price", {
-        method: "POST",
-        body: JSON.stringify({month: dateRange}),
-        headers: {'Content-Type': 'application/json'}
-    });
-    return await response.json();
-}
 
 export default function GoldPrice() {
     const [dateRange, setDateRange] = useState("1")

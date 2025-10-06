@@ -7,12 +7,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import HoldingAmountDistributionChart from "@/app/holdings/amount-distribution";
 import IndexGroupDistributionChart from "@/app/holdings/index-group-distribution";
 import HoldingProducts from "@/app/holdings/holding-products";
-
-export async function fetchHoldings() {
-    const baseUrl = process.env.API_BASE_URL
-    const response = await fetch(`${baseUrl}/account/holdings`, {credentials: "include"})
-    return await response.json();
-}
+import {fetchHoldings} from "@/lib/api";
 
 export default function Holdings() {
     const [holdings, setHoldings] = useState([] as HoldingDTO[])

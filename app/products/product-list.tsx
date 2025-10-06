@@ -33,18 +33,7 @@ import {Spinner} from "@/components/ui/spinner";
 import {Empty, EmptyDescription, EmptyTitle} from "@/components/ui/empty";
 import {Item, ItemActions, ItemContent, ItemFooter, ItemGroup, ItemSeparator, ItemTitle} from "@/components/ui/item";
 import {toast} from "sonner";
-
-async function fetchProducts() {
-    const baseUrl = process.env.API_BASE_URL
-    const res = await fetch(`${baseUrl}/products`, {credentials: "include"})
-    return await res.json()
-}
-
-async function searchProducts(keyword: string) {
-    const baseUrl = process.env.API_BASE_URL
-    const res = await fetch(`${baseUrl}/products/search?keyword=${encodeURIComponent(keyword)}`, {credentials: "include"})
-    return await res.json()
-}
+import {fetchProducts, searchProducts} from "@/lib/api";
 
 function AddProductDialog() {
     const [open, setOpen] = useState(false)
