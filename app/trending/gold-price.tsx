@@ -22,8 +22,7 @@ import {toast} from "sonner";
 import {parseYYYYMMDD} from "@/lib/utils";
 import {fetchGoldPrice} from "@/lib/api";
 
-
-const chartConfig = {
+const CMB_GOLD_PRICE_CHART_CONFIG = {
     price: {
         label: "Price",
         color: "var(--color-profit)",
@@ -74,9 +73,9 @@ export default function GoldPrice() {
                 setPctChange(change)
 
                 if (change >= 0) {
-                    chartConfig.price.color = "var(--color-profit)"
+                    CMB_GOLD_PRICE_CHART_CONFIG.price.color = "var(--color-profit)"
                 } else {
-                    chartConfig.price.color = "var(--color-loss)"
+                    CMB_GOLD_PRICE_CHART_CONFIG.price.color = "var(--color-loss)"
                 }
             } else {
                 setPctChange(0)
@@ -92,12 +91,18 @@ export default function GoldPrice() {
 
     const dateRangeLabel = () => {
         switch (dateRange) {
-            case "0": return dateInfo;
-            case "1": return "the past month";
-            case "3": return "the past 3 months";
-            case "6": return "the past 6 months";
-            case "12": return "the past year";
-            default: return "unknown period";
+            case "0":
+                return dateInfo;
+            case "1":
+                return "the past month";
+            case "3":
+                return "the past 3 months";
+            case "6":
+                return "the past 6 months";
+            case "12":
+                return "the past year";
+            default:
+                return "unknown period";
         }
     }
 
@@ -128,8 +133,8 @@ export default function GoldPrice() {
                 </CardAction>
             </CardHeader>
             <CardContent className={"px-4 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
-                <ChartContainer config={chartConfig}>
+                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2 text-muted-foreground"}/>)}
+                <ChartContainer config={CMB_GOLD_PRICE_CHART_CONFIG}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
@@ -166,7 +171,7 @@ export default function GoldPrice() {
                         />
                         <Area
                             className="transition-opacity duration-500 ease-in-out"
-                            style={{opacity: dataLoading ? 0 : 1}}
+                            // style={{opacity: dataLoading ? 0 : 1}}
                             dataKey="price"
                             type="linear"
                             stroke="var(--color-price)"
@@ -186,14 +191,17 @@ export default function GoldPrice() {
             </CardContent>
             <CardFooter className="flex-col items-start text-xs lg:text-sm">
                 {
-                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner
-                        className={"mr-2"}/> Updating...</div>) : (
+                    dataLoading ? (
+                        <div className={"flex justify-start items-center text-muted-foreground h-[22px]"}>
+                            <Spinner className={"mr-2"}/> Updating...
+                        </div>
+                    ) : (
                         <div className="flex gap-2 leading-none font-medium">
                             <div className={"flex justify-start items-center"}>
                                 {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
                                     <TrendingDown className={"h-4 w-4 mr-1"}/>}
                                 <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span
-                                    className={`text-[${chartConfig.price.color}]`}>{pctChange.toFixed(1)}%</span> in <Badge
+                                    className={`text-[${CMB_GOLD_PRICE_CHART_CONFIG.price.color}]`}>{pctChange.toFixed(1)}%</span> in <Badge
                                     variant={"outline"}>{dateRangeLabel()}</Badge></span>
                             </div>
                         </div>

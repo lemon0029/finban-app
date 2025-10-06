@@ -110,13 +110,16 @@ export default function GoldSpot() {
                 setChartData(prices)
 
                 if (dateRange === "1d") {
-                    if (prices.length > 1 && prices[prices.length - 1]) {
-                        setLatestPrice(prices[prices.length - 1].price)
-                    }
-
                     const configs = data["config"]
-                    setPreviousClose(parseFloat(configs["lastClose"]))
-                    setPctChange(parseFloat(configs["changePcr"]))
+                    const pc = parseFloat(configs["lastClose"]);
+                    const lc = prices[prices.length - 1].price;
+
+                    setLatestPrice(lc)
+                    setPreviousClose(pc)
+
+                    if (pc && lc) {
+                        setPctChange((lc - pc) / lc * 100)
+                    }
                 } else {
                     setLatestPrice(null)
                     setPreviousClose(null)
@@ -221,7 +224,7 @@ export default function GoldSpot() {
                 </CardAction>
             </CardHeader>
             <CardContent className={"px-4 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
+                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2 text-muted-foreground"}/>)}
                 {!dataLoading && latestPrice && (
                     <Badge variant={"outline"} className={"absolute left-6 top-1"}>
                         <AnimatedNumber value={latestPrice}/>
@@ -277,9 +280,9 @@ export default function GoldSpot() {
                         />
                         <Area
                             className="transition-opacity duration-500 ease-in-out"
-                            style={{opacity: dataLoading ? 0 : 1}}
+                            // style={{opacity: dataLoading ? 0 : 1}}
                             dataKey="price"
-                            type="linear"
+                            type="natural"
                             stroke="var(--color-price)"
                             fill="url(#xau-usd-price-fill-color)"
                             strokeWidth={2}
@@ -301,10 +304,13 @@ export default function GoldSpot() {
                 </ChartContainer>
             </CardContent>
             <CardFooter className="flex-col items-start text-xs lg:text-sm">
-                {
-                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner
-                        className={"mr-2"}/> Updating...</div>) : (
-                        <div className="flex gap-2 leading-none font-medium">
+                <div className="flex gap-2 leading-none">
+                    {
+                        dataLoading ? (
+                            <div className={"flex justify-start items-center text-muted-foreground h-[22px]"}>
+                                <Spinner className={"h-4 w-4 mr-2"}/> Updating...
+                            </div>
+                        ) : (
                             <div className={"flex justify-start items-center"}>
                                 {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
                                     <TrendingDown className={"h-4 w-4 mr-1"}/>}
@@ -312,9 +318,9 @@ export default function GoldSpot() {
                                     className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>{pctChange.toFixed(2)}%</span> in <Badge
                                     variant={"outline"}>{getDateRangeLabel(dateRange)}</Badge></span>
                             </div>
-                        </div>
-                    )
-                }
+                        )
+                    }
+                </div>
             </CardFooter>
         </Card>
     )

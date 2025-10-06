@@ -61,7 +61,7 @@ function AddProductDialog() {
                 setIsSearching(false)
             })
             .catch(ex => {
-                console.log(ex)
+                console.error(ex)
                 toast.error("Failed to invoke search action")
             })
     }

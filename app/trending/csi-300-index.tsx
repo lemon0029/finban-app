@@ -22,7 +22,7 @@ import {getDateRangeLabel, parseYYYYMMDD, parseYYYYMMDDHHMM} from "@/lib/utils";
 import {fetchCSI300IndexData} from "@/lib/api";
 
 
-const CSI300ChartConfig = {
+const CSI_300_CHART_CONFIG = {
     price: {
         label: "Value",
         color: "var(--color-profit)",
@@ -108,9 +108,9 @@ export default function CSI300Index() {
             }
 
             if (changed >= 0) {
-                CSI300ChartConfig.price.color = "var(--color-profit)"
+                CSI_300_CHART_CONFIG.price.color = "var(--color-profit)"
             } else {
-                CSI300ChartConfig.price.color = "var(--color-loss)"
+                CSI_300_CHART_CONFIG.price.color = "var(--color-loss)"
             }
 
             setChartData(prices)
@@ -166,8 +166,8 @@ export default function CSI300Index() {
                 </CardAction>
             </CardHeader>
             <CardContent className={"px-4 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
-                <ChartContainer config={CSI300ChartConfig}>
+                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2 text-muted-foreground"}/>)}
+                <ChartContainer config={CSI_300_CHART_CONFIG}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
@@ -236,8 +236,10 @@ export default function CSI300Index() {
             </CardContent>
             <CardFooter className="flex-col items-start text-xs lg:text-sm">
                 {
-                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner
-                        className={"mr-2"}/> Updating...</div>) : (
+                    dataLoading ? (
+                        <div className={"flex justify-start items-center text-muted-foreground h-[22px]"}>
+                            <Spinner className={"mr-2"}/> Updating...</div>
+                    ) : (
                         <div className="flex gap-2 leading-none font-medium">
                             <div className={"flex justify-start items-center"}>
                                 <div>
@@ -246,7 +248,7 @@ export default function CSI300Index() {
                                 </div>
                                 <span>
                             {pctChange >= 0 ? "Trending up" : "Trending down"} by <span
-                                    className={`text-[${CSI300ChartConfig.price.color}]`}>{pctChange.toFixed(2)}%</span> in <Badge
+                                    className={`text-[${CSI_300_CHART_CONFIG.price.color}]`}>{pctChange.toFixed(2)}%</span> in <Badge
                                     variant={"outline"}>{dateRangeLabel}</Badge>
                         </span>
                             </div>

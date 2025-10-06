@@ -22,7 +22,7 @@ import {getDateRangeLabel} from "@/lib/utils";
 import {fetchNDXData} from "@/lib/api";
 
 
-const NDXChartConfig = {
+const NDX_CHART_CONFIG = {
     price: {
         label: "Value",
         color: "var(--color-profit)",
@@ -33,7 +33,7 @@ export default function NDXIndex() {
     const [dataLoading, setDataLoading] = useState(false)
     const [chartData, setChartData] = useState([] as { time: string; price: string }[])
     const [pctChange, setPctChange] = useState(0)
-    const [timeAsOf, setTimeAsOf] = useState("")
+    const [dateRangeLabel, setDateRangeLabel] = useState("")
     const [previousClose, setPreviousClose] = useState(0)
     const [dateRange, setDateRange] = useState("1d")
 
@@ -49,28 +49,35 @@ export default function NDXIndex() {
                 }
             })
 
-            setPctChange(data["data"]["percentageChange"])
-
-            if (prices.length >= 2) {
-                const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
-                setPctChange(change)
+            if (dateRange === "1d") {
+                setPctChange(parseFloat(data["data"]["percentageChange"]))
+            } else {
+                if (prices.length >= 2) {
+                    const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
+                    setPctChange(change)
+                }
             }
 
             const deltaIndicator = data["data"]["deltaIndicator"];
             if (deltaIndicator === "up") {
-                NDXChartConfig.price.color = "var(--color-profit)"
+                NDX_CHART_CONFIG.price.color = "var(--color-profit)"
             } else {
-                NDXChartConfig.price.color = "var(--color-loss)"
+                NDX_CHART_CONFIG.price.color = "var(--color-loss)"
             }
 
             setChartData(prices)
             setPreviousClose(parseFloat(data["data"]["previousClose"].replace(/,/g, '')))
 
             if (dateRange === "1d") {
-                setTimeAsOf(data["data"]["timeAsOf"])
+                let timeAsOf = data["data"]["timeAsOf"]
+                if (timeAsOf.length > 11) {
+                    timeAsOf = timeAsOf.substring(0, 11)
+                }
+
+                setDateRangeLabel(timeAsOf)
             } else {
                 setPreviousClose(0)
-                setTimeAsOf(getDateRangeLabel(dateRange))
+                setDateRangeLabel(getDateRangeLabel(dateRange))
             }
 
             setDataLoading(false)
@@ -80,6 +87,41 @@ export default function NDXIndex() {
             toast.error("Failed to fetch NDX data")
         })
     }, [dateRange])
+
+    const dateRanges = [
+        {
+            value: "1d",
+            label: "1D",
+        },
+        {
+            value: "1w",
+            label: "1W",
+        },
+        {
+            value: "1m",
+            label: "1M",
+        },
+        {
+            value: "6m",
+            label: "6M",
+        },
+        {
+            value: "ytd",
+            label: "YTD",
+        },
+        {
+            value: "1y",
+            label: "1Y",
+        },
+        {
+            value: "5y",
+            label: "5Y",
+        },
+        {
+            value: "10y",
+            label: "10Y",
+        },
+    ]
 
     return (
         <Card className={"gap-4"}>
@@ -97,22 +139,21 @@ export default function NDXIndex() {
                         <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-0">
                             <SelectGroup>
                                 <SelectLabel>Period</SelectLabel>
-                                <SelectItem value="1d">1D</SelectItem>
-                                <SelectItem value="1w">1W</SelectItem>
-                                <SelectItem value="1m">1M</SelectItem>
-                                <SelectItem value="6m">6M</SelectItem>
-                                <SelectItem value="ytd">YTD</SelectItem>
-                                <SelectItem value="1y">1Y</SelectItem>
-                                <SelectItem value="5y">5Y</SelectItem>
-                                <SelectItem value="10y">10Y</SelectItem>
+                                {
+                                    dateRanges.map((range) => (
+                                        <SelectItem key={range.value} value={range.value} disabled={dataLoading}>
+                                            {range.label}
+                                        </SelectItem>
+                                    ))
+                                }
                             </SelectGroup>
                         </SelectContent>
                     </Select>
                 </CardAction>
             </CardHeader>
             <CardContent className={"px-4 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
-                <ChartContainer config={NDXChartConfig}>
+                {dataLoading && (<Spinner className={"text-muted-foreground size-5 absolute left-8 top-2"}/>)}
+                <ChartContainer config={NDX_CHART_CONFIG}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
@@ -175,19 +216,28 @@ export default function NDXIndex() {
             </CardContent>
             <CardFooter className="flex-col items-start text-xs lg:text-sm">
                 {
-                    dataLoading ? (<div className={"flex justify-start items-center text-muted-foreground"}><Spinner
-                        className={"mr-2"}/> Updating...</div>) : (
+                    dataLoading ? (
+                        <div className={"flex justify-start items-center text-muted-foreground h-[22px]"}>
+                            <Spinner className={"mr-2"}/> Updating...</div>
+                    ) : (
                         <div className="flex gap-2 leading-none font-medium">
                             <div className={"flex justify-start items-center"}>
                                 <div>
                                     {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
                                         <TrendingDown className={"h-4 w-4 mr-1"}/>}
                                 </div>
-                                <span>
-                            {pctChange >= 0 ? "Trending up" : "Trending down"} by <span
-                                    className={`text-[${NDXChartConfig.price.color}]`}>{pctChange.toFixed(2)}%</span> in <Badge
-                                    variant={"outline"}>{timeAsOf}</Badge>
-                        </span>
+                                <div className={"flex items-center gap-1"}>
+                                    <span>
+                                        {pctChange >= 0 ? "Trending up" : "Trending down"} by
+                                    </span>
+                                    <span
+                                        className={`text-[${NDX_CHART_CONFIG.price.color}] h-full`}>
+                                        {pctChange.toFixed(2)}%
+                                    </span>
+                                    <span>
+                                        in <Badge variant={"outline"}>{dateRangeLabel}</Badge>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     )
