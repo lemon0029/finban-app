@@ -34,6 +34,18 @@ const nextConfig: NextConfig = {
             {
                 source: '/external/ifzqgtimg/appstock/app/newfqkline/get',
                 destination: 'https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get'
+            },
+            {
+                source: '/external/api/financialdata/68/historical/chart',
+                destination: 'https://api.investing.com/api/financialdata/68/historical/chart'
+            },
+            {
+                source: '/external/currencies/xau-usd-chart',
+                destination: 'https://www.investing.com/currencies/xau-usd-chart'
+            },
+            {
+                source: '/47a31e6560ab8dd9ad8b2b0c565c02d5/1759733106/1/1/8/history',
+                destination: 'https://tvc4.investing.com/47a31e6560ab8dd9ad8b2b0c565c02d5/1759733106/1/1/8/history?symbol=68&resolution=1&from=1754550211&to=1759734271'
             }
         ]
     },

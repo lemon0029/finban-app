@@ -108,3 +108,38 @@ export async function fetchNDXData(dateRange: string) {
     });
     return await response.json();
 }
+
+
+export async function fetchXAUUSDData(period: string) {
+    const baseUrl = "https://api.investing.com/api/financialdata/68/historical/chart"
+
+    if (period === "1d") {
+        const today = new Date();
+        const to = Math.floor(today.getTime() / 1000);
+        const from = Math.floor(today.getTime() / 1000 - 86400);
+
+        const response = await fetch(`/api/investing-proxy/chart/xau-usd?from=${from}&to=${to}`);
+        return await response.json();
+    } else if (period === "1w") {
+        const response = await fetch(`${baseUrl}?interval=PT30M&period=P1W&pointscount=160`);
+        return await response.json();
+    } else if (period === "1m") {
+        const response = await fetch(`${baseUrl}?interval=PT5H&period=P1M&pointscount=160`);
+        return await response.json();
+    } else if (period === "3m") {
+        const response = await fetch(`${baseUrl}?interval=P1D&period=P3M&pointscount=160`);
+        return await response.json();
+    } else if (period === "6m") {
+        const response = await fetch(`${baseUrl}?interval=P1D&period=P6M&pointscount=160`);
+        return await response.json();
+    } else if (period === "1y") {
+        const response = await fetch(`${baseUrl}?interval=P1W&period=P1Y&pointscount=160`);
+        return await response.json();
+    } else if (period === "5y") {
+        const response = await fetch(`${baseUrl}?interval=P1M&period=P5Y&pointscount=160`);
+        return await response.json();
+    } else if (period === "max") {
+        const response = await fetch(`${baseUrl}?interval=P1M&period=MAX&pointscount=160`);
+        return await response.json();
+    }
+}

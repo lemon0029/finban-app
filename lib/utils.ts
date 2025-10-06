@@ -23,6 +23,15 @@ export function parseYYYYMMDDHHMM(str: string) {
 }
 
 export function getDateRangeLabel(dateRange: string) {
+
+    if (dateRange === "1d") {
+        return new Date().toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "2-digit"
+        })
+    }
+
     if (dateRange === "5d") {
         return "the past 5 days"
     } else if (dateRange === "1m") {
@@ -43,6 +52,8 @@ export function getDateRangeLabel(dateRange: string) {
         return "the past 3 years"
     } else if (dateRange == "1w") {
         return "the past week"
+    } else if (dateRange == "max") {
+        return "the entire history"
     }
 
     return "unknown period"
