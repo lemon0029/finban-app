@@ -20,6 +20,7 @@ import {Badge} from "@/components/ui/badge";
 import {toast} from "sonner";
 import {getDateRangeLabel} from "@/lib/utils";
 import {fetchXAUUSDData} from "@/lib/api";
+import AnimatedNumber from "@/components/animated-number";
 
 const XAU_USD_CHART_CONFIG = {
     price: {
@@ -35,11 +36,14 @@ export default function GoldSpot() {
     const [pctChange, setPctChange] = useState(0)
     const [previousClose, setPreviousClose] = useState<number | null>()
     const [latestPrice, setLatestPrice] = useState<number | null>()
+    const [intervalDataLoading, setIntervalDataLoading] = useState(false)
 
     useEffect(() => {
         setDataLoading(true)
 
         const updateData = () => {
+
+            setIntervalDataLoading(true)
 
             let prices = [] as { time: string; price: number }[]
 
@@ -132,9 +136,11 @@ export default function GoldSpot() {
                 }
 
                 setDataLoading(false)
+                setIntervalDataLoading(false)
             }).catch((ex) => {
                 console.error(ex)
                 setDataLoading(false)
+                setIntervalDataLoading(false)
                 toast.error("Failed to fetch gold price data")
             })
         }
@@ -147,6 +153,41 @@ export default function GoldSpot() {
         }
 
     }, [dateRange])
+
+    const dataRanges = [
+        {
+            label: "1D",
+            value: "1d",
+        },
+        {
+            label: "1W",
+            value: "1w",
+        },
+        {
+            label: "1M",
+            value: "1m",
+        },
+        {
+            label: "3M",
+            value: "3m",
+        },
+        {
+            label: "6M",
+            value: "6m",
+        },
+        {
+            label: "1Y",
+            value: "1y",
+        },
+        {
+            label: "5Y",
+            value: "5y",
+        },
+        {
+            label: "MAX",
+            value: "max",
+        }
+    ]
 
     return (
         <Card className={"gap-4"}>
@@ -164,14 +205,16 @@ export default function GoldSpot() {
                         <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-0">
                             <SelectGroup>
                                 <SelectLabel>Period</SelectLabel>
-                                <SelectItem value="1d">1D</SelectItem>
-                                <SelectItem value="1w">1W</SelectItem>
-                                <SelectItem value="1m">1M</SelectItem>
-                                <SelectItem value="3m">3M</SelectItem>
-                                <SelectItem value="6m">6M</SelectItem>
-                                <SelectItem value="1y">1Y</SelectItem>
-                                <SelectItem value="5y">5Y</SelectItem>
-                                <SelectItem value="max">MAX</SelectItem>
+                                {
+                                    dataRanges.map((range) => (
+                                        <SelectItem key={range.value}
+                                                    value={range.value}
+                                                    disabled={intervalDataLoading || dataLoading}
+                                        >
+                                            {range.label}
+                                        </SelectItem>
+                                    ))
+                                }
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -181,12 +224,14 @@ export default function GoldSpot() {
                 {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2"}/>)}
                 {!dataLoading && latestPrice && (
                     <Badge variant={"outline"} className={"absolute left-6"}>
-                        {latestPrice.toFixed(2)}
+                        <AnimatedNumber value={latestPrice}/>
                         <span className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>
-                            ({previousClose && latestPrice - previousClose > 0 ? "+" : "-"}
-                            {previousClose && (latestPrice - previousClose).toFixed(2)}
+                            ({previousClose && latestPrice - previousClose > 0 ? "+" : ""}
+                            {previousClose && (<AnimatedNumber value={latestPrice - previousClose}/>)}
                         </span>
-                        <span className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>{pctChange.toFixed(2)}%)</span>
+                        <span className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>
+                            {pctChange && <AnimatedNumber value={pctChange}/>}%)
+                        </span>
                     </Badge>
                 )}
                 <ChartContainer config={XAU_USD_CHART_CONFIG}>
