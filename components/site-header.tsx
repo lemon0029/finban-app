@@ -67,7 +67,7 @@ export function SiteHeader() {
         }
 
         if (pathname == "/calculator") {
-            return "Calculator"
+            return "SIP Calculator"
         }
 
         if (pathname == "/trending") {

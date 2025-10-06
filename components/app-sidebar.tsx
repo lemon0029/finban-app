@@ -57,7 +57,7 @@ const data = {
             icon: ChartCandlestickIcon,
         },
         {
-            title: "Gain Calculator",
+            title: "SIP Calculator",
             url: "/calculator",
             icon: CalculatorIcon,
         },
