@@ -7,10 +7,10 @@ const nextConfig: NextConfig = {
     },
     async rewrites() {
         return [
-            // {
-            //     source: '/api/:path*',
-            //     destination: "http://192.168.1.4:8080/api/:path*",
-            // },
+            {
+                source: '/api/:path*',
+                destination: "http://192.168.1.4:8080/api/:path*",
+            },
             {
                 source: '/igoldaccount/golddetail/history-price',
                 destination: 'https://mobile.cmbchina.com/igoldaccount/golddetail/history-price',
