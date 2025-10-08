@@ -157,8 +157,6 @@ export default function InvestingChart({data}: { data: never }) {
                 hour: "numeric"
             })
 
-            console.log(date)
-
             const lastData = {
                 time: formattedTime,
                 price: data.last

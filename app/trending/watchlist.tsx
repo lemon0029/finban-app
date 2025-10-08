@@ -163,7 +163,7 @@ export default function Watchlist() {
             </div>
 
             {isSearching ? (
-                <div className={"flex flex-col w-full gap-3"}>
+                <div className={"flex flex-col w-full gap-3 mt-3"}>
                     <Skeleton className={"h-[80px]"}/>
                     <Skeleton className={"h-[80px]"}/>
                     <Skeleton className={"w-2/3 h-[80px]"}/>
