@@ -146,10 +146,6 @@ export default function InvestingChart({data}: { data: never }) {
                 const newData = []
                 let newDataAppended = false
 
-                if (prevData.length === 0) {
-                    return []
-                }
-
                 for (const prev of prevData) {
                     if (prev.time === lastData.time) {
                         newData.push(lastData)
