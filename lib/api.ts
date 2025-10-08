@@ -115,6 +115,15 @@ export async function fetchInvestingChartDataChanges(id: number) {
     return await response.json();
 }
 
+export async function fetchInvestingHistoricalData(pairId: number, resolution: string) {
+    const today = new Date();
+    const to = Math.floor(today.getTime() / 1000);
+    const from = Math.floor(today.getTime() / 1000 - 86400);
+
+    const response = await fetch(`/api/investing-proxy/historical-data?pairId=${pairId}&resolution=${resolution}&from=${from}&to=${to}`);
+    return await response.json();
+}
+
 export async function fetchInvestingChartDataByInterval(id: number, interval: string, pointsCount: number) {
     const baseUrl = `https://api.investing.com/api/financialdata/${id}/historical/chart`
 
@@ -146,7 +155,7 @@ export async function fetchInvestingChartData(id: number, symbol: string, period
     } else if (period === "5y") {
         const response = await fetch(`${baseUrl}?interval=P1M&period=P5Y&pointscount=160`);
         return await response.json();
-    } else if (period === "max") {
+    } else if (period === "all_time") {
         const response = await fetch(`${baseUrl}?interval=P1M&period=MAX&pointscount=160`);
         return await response.json();
     }

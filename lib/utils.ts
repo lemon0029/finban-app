@@ -35,25 +35,27 @@ export function getDateRangeLabel(dateRange: string) {
     if (dateRange === "5d") {
         return "the past 5 days"
     } else if (dateRange === "1m") {
-        return "the past month"
+        return "Past Month"
     } else if (dateRange === "ytd") {
-        return "the year to date"
+        return "Year to Date"
     } else if (dateRange === "5y") {
-        return "the past 5 years"
+        return "Past 5 Years"
     } else if (dateRange === "1y") {
-        return "the past year"
+        return "Past Year"
     } else if (dateRange === "6m") {
-        return "the past 6 months"
+        return "Past 6 Months"
     } else if (dateRange == "10y") {
-        return "the past 10 years"
+        return "Past 10 Years"
     } else if (dateRange === "3m") {
-        return "the past 3 months"
+        return "Past 3 Months"
     } else if (dateRange === "3y") {
-        return "the past 3 years"
+        return "Past 3 Years"
     } else if (dateRange == "1w") {
-        return "the past week"
+        return "Past Week"
     } else if (dateRange == "max") {
         return "the entire history"
+    } else if (dateRange == "all_time") {
+        return "All Time"
     }
 
     return "unknown period"

@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
             {
                 source: '/47a31e6560ab8dd9ad8b2b0c565c02d5/1759733106/1/1/8/history',
                 destination: 'https://tvc4.investing.com/47a31e6560ab8dd9ad8b2b0c565c02d5/1759733106/1/1/8/history?symbol=68&resolution=1&from=1754550211&to=1759734271'
+            },
+            {
+                source: '/88efe13d19de4505bcf7954857c59771/0/0/0/0/history',
+                destination: 'https://tvc.investing.com/88efe13d19de4505bcf7954857c59771/0/0/0/0/history'
             }
         ]
     },

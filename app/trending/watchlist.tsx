@@ -4,7 +4,7 @@ import {Input} from "@/components/ui/input";
 import React, {useEffect, useState} from "react";
 import {CheckIcon, PlusIcon, Search, TrendingDownIcon, TrendingUpIcon, XIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {fetchInvestingChartDataChanges, fetchInvestingChartDataByInterval, investingSearch} from "@/lib/api";
+import {fetchInvestingChartDataByInterval, fetchInvestingChartDataChanges, investingSearch} from "@/lib/api";
 import {toast} from "sonner";
 import {
     Item,
