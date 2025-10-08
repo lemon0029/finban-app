@@ -66,7 +66,9 @@
 
 :root {
     --color-profit: rgb(19, 115, 51);
-    --color-loss: rgb(165,14,14);
+    --color-profit-background: rgba(19, 115, 51, 0.2);
+    --color-loss: rgb(165, 14, 14);
+    --color-loss-background: rgba(165, 14, 14, 0.2);
     --radius: 0.625rem;
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
@@ -103,7 +105,9 @@
 
 .dark {
     --color-profit: rgb(19, 115, 51);
-    --color-loss: rgb(165,14,14);
+    --color-profit-background: rgba(19, 115, 51, 0.2);
+    --color-loss: rgb(165, 14, 14);
+    --color-loss-background: rgba(165, 14, 14, 0.2);
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);

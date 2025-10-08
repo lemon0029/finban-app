@@ -1,10 +1,10 @@
 "use client"
 
 import {Input} from "@/components/ui/input";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {CheckIcon, PlusIcon, Search, TrendingDownIcon, TrendingUpIcon, XIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {fetchInvestingChartDataByInterval, fetchInvestingChartDataChanges, investingSearch} from "@/lib/api";
+import {investingSearch} from "@/lib/api";
 import {toast} from "sonner";
 import {
     Item,
@@ -23,6 +23,9 @@ import {ResponsiveContainer} from "recharts";
 import InvestingChart from "@/app/trending/investing-chart";
 import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
+import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-data";
+import AnimatedNumber from "@/components/animated-number";
+import AnimatedNumberColor from "@/components/animated-number-color";
 
 export default function Watchlist() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -32,6 +35,9 @@ export default function Watchlist() {
     const [selectedItem, setSelectedItem] = useState()
 
     const [watchlist, setWatchlist] = useState([])
+    const [lastValues, setLastValues] = useState({})
+
+    const streaming = useRef<InvestingStreamingData>(null)
 
     const handleSearch = () => {
         if (searchTerm) {
@@ -59,20 +65,39 @@ export default function Watchlist() {
     }
 
     useEffect(() => {
-        watchlist.forEach((item) => {
-            fetchInvestingChartDataChanges(item["id"])
-                .then(data => {
-                    item["changes"] = data as never
-                })
 
-            fetchInvestingChartDataByInterval(item["id"], "PT1M", 60)
-                .then(data => {
-                    if (data && data["data"] && data["data"].length > 0) {
-                        item["latestPrice"] = data["data"][data["data"].length - 1][4] as never
-                    }
-                })
+        if (streaming.current != null) {
+            streaming.current.close()
+            streaming.current = null
+            console.log("Closed stream")
+        }
+
+        if (watchlist.length === 0) {
+            return
+        }
+
+        streaming.current = new InvestingStreamingData()
+
+        streaming.current.on('open', () => {
+            const pairIds = watchlist.map(item => item["id"]);
+            streaming.current!.subscribe(pairIds)
+            console.log("Subscribed to pairIds: ", pairIds)
         })
-    }, [watchlist])
+
+        streaming.current.on('data', (data: PidInfo) => {
+            console.log(data)
+
+            setLastValues(prevObject => {
+                return {
+                    ...prevObject,
+                    [data.pid]: {
+                        last: data.last,
+                        pctChange: (data.pc / data.last_close * 100)
+                    }
+                }
+            })
+        })
+    }, [watchlist]);
 
     return (
         <div className="flex items-center gap-2 flex-wrap">
@@ -134,24 +159,26 @@ export default function Watchlist() {
                                             {
                                                 searchTerm === "" && (
                                                     <ItemContent>
-                                                        {item && item["latestPrice"] && (
+                                                        {lastValues[item["id"]] && lastValues[item["id"]]["last"] && (
                                                             <ItemTitle className={"flex justify-end w-full"}>
-                                                                {item["latestPrice"]}
+                                                                {<AnimatedNumberColor value={lastValues[item["id"]]["last"]}/>}
                                                             </ItemTitle>
                                                         )}
                                                         {
-                                                            item["changes"] && item["changes"]["pct_1d"] && (
+                                                            lastValues[item["id"]] && lastValues[item["id"]]["pctChange"] && (
                                                                 <Badge variant={"secondary"}
-                                                                       className={`${item["changes"]["pct_1d"] > 0 ? "bg-[var(--color-profit)]/10 text-[var(--color-profit)]" : "bg-[var(--color-loss)]/10 text-[var(--color-loss)]"}`}
+                                                                       className={`${lastValues[item["id"]]["pctChange"] > 0 ? "bg-[var(--color-profit)]/10 text-[var(--color-profit)]" : "bg-[var(--color-loss)]/10 text-[var(--color-loss)]"}`}
                                                                 >
                                                                     {
-                                                                        item["changes"]["pct_1d"] > 0 ? (
+                                                                        lastValues[item["id"]]["pctChange"] > 0 ? (
                                                                             <TrendingUpIcon className={"h-4 w-4"}/>
                                                                         ) : (
                                                                             <TrendingDownIcon className={"h-4 w-4"}/>
                                                                         )
                                                                     }
-                                                                    {item["changes"]["pct_1d"]}%
+                                                                    <span>
+                                                                        {<AnimatedNumber value={lastValues[item["id"]]["pctChange"]}/>}%
+                                                                    </span>
                                                                 </Badge>
                                                             )
                                                         }
