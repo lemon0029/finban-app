@@ -125,11 +125,16 @@ export default function InvestingChart({data}: { data: never }) {
     const [lastPrice, setLastPrice] = useState<number | null>()
     const [intervalDataLoading, setIntervalDataLoading] = useState(false)
     const streaming = useRef<InvestingStreamingData>(null)
+    const [historyDataLoaded, setHistoryDataLoaded] = useState(false)
 
     const pairId = useRef<number>(data['id'])
     const symbolUrl = useRef(data['url'])
 
     useEffect(() => {
+
+        if (!historyDataLoaded) {
+            return
+        }
 
         if (dateRange !== "1d" && streaming.current != null) {
             streaming.current.close()
@@ -151,7 +156,11 @@ export default function InvestingChart({data}: { data: never }) {
             setPreviousClose(data.last_close)
             setPctChange(data.pc / data.last_close * 100)
 
-            const date = new Date(Math.floor(data.timestamp / 1000 / 60) * 60)
+            const date = new Date(Math.floor(data.timestamp))
+
+            // 这里拿到的时间是精度到秒到，但是需要显示的精度是分钟
+            date.setSeconds(0)
+
             const formattedTime = date.toLocaleDateString("en-US", {
                 minute: "2-digit",
                 hour: "numeric"
@@ -188,7 +197,7 @@ export default function InvestingChart({data}: { data: never }) {
             console.log("Closed stream for pairId: ", pairId)
         }
 
-    }, [dateRange])
+    }, [dateRange, historyDataLoaded])
 
     useEffect(() => {
         setDataLoading(true)
@@ -225,7 +234,7 @@ export default function InvestingChart({data}: { data: never }) {
                     setChartData(prices)
                     setDataLoading(false)
                     setIntervalDataLoading(false)
-
+                    setHistoryDataLoaded(true)
                 }).catch((ex) => {
                 console.error(ex)
                 setDataLoading(false)
@@ -235,6 +244,10 @@ export default function InvestingChart({data}: { data: never }) {
         }
 
         updateData()
+
+        return () => {
+            setHistoryDataLoaded(false)
+        }
     }, [dateRange])
 
     const dataRanges = [

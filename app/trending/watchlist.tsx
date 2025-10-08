@@ -35,6 +35,7 @@ export default function Watchlist() {
 
     const [watchlist, setWatchlist] = useState([])
     const [lastValues, setLastValues] = useState({})
+    const [historyDataLoaded, setHistoryDataLoaded] = useState(false)
 
     const streaming = useRef<InvestingStreamingData>(null)
 
@@ -81,6 +82,8 @@ export default function Watchlist() {
                             }
                         }
                     })
+
+                    setHistoryDataLoaded(true)
                 })
                 .catch(ex => {
                     console.error(ex)
@@ -97,6 +100,10 @@ export default function Watchlist() {
 
     useEffect(() => {
 
+        if (!historyDataLoaded) {
+            return
+        }
+
         if (streaming.current != null) {
             streaming.current.close()
             streaming.current = null
@@ -104,7 +111,7 @@ export default function Watchlist() {
         }
 
         if (openDialog) {
-            return;
+            return
         }
 
         if (watchlist.length === 0) {
@@ -132,7 +139,7 @@ export default function Watchlist() {
                 }
             })
         })
-    }, [watchlist, openDialog]);
+    }, [watchlist, openDialog, historyDataLoaded]);
 
     return (
         <div className="flex items-center gap-2 flex-wrap">
