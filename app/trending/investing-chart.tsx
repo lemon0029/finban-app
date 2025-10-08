@@ -114,6 +114,7 @@ export default function InvestingChart({data}: { data: never }) {
         if (dateRange !== "1d" && streaming.current != null) {
             streaming.current.close()
             console.log("Closed stream for pairId: ", pairId.current)
+            setPreviousClose(null)
             return
         }
 
@@ -144,6 +145,10 @@ export default function InvestingChart({data}: { data: never }) {
             setChartData(prevData => {
                 const newData = []
                 let newDataAppended = false
+
+                if (prevData.length === 0) {
+                    return []
+                }
 
                 for (const prev of prevData) {
                     if (prev.time === lastData.time) {
@@ -176,9 +181,16 @@ export default function InvestingChart({data}: { data: never }) {
 
             setIntervalDataLoading(true)
 
-            fetchInvestingChartDataChanges(pairId.current)
-                .then(data => {
-                    const change = data[`pct_${dateRange}`];
+            const data1 = fetchInvestingChartDataChanges(pairId.current)
+
+            let prices = [] as { time: string; price: number }[]
+
+            const data2 = dateRange === "1d" ? fetchInvestingHistoricalData(pairId.current, "1")
+                : fetchInvestingChartData(pairId.current, symbolUrl.current, dateRange)
+
+            Promise.all([data1, data2])
+                .then(([data1, data2]) => {
+                    const change = data1[`pct_${dateRange}`];
 
                     if (change >= 0) {
                         INVESTING_CHART_CONFIG.price.color = "var(--color-profit)"
@@ -187,25 +199,18 @@ export default function InvestingChart({data}: { data: never }) {
                     }
 
                     setPctChange(change)
-                })
 
-            let prices = [] as { time: string; price: number }[]
+                    prices = loadChartData(dateRange, data2)
 
-            const response = dateRange === "1d" ? fetchInvestingHistoricalData(pairId.current, "1")
-                : fetchInvestingChartData(pairId.current, symbolUrl.current, dateRange)
+                    if (prices && prices.length > 0) {
+                        setLastPrice(prices[prices.length - 1].price)
+                    }
 
-            response.then(data => {
-                prices = loadChartData(dateRange, data)
+                    setChartData(prices)
+                    setDataLoading(false)
+                    setIntervalDataLoading(false)
 
-                if (prices && prices.length > 0) {
-                    setLastPrice(prices[prices.length - 1].price)
-                }
-
-                setPreviousClose(null)
-                setChartData(prices)
-                setDataLoading(false)
-                setIntervalDataLoading(false)
-            }).catch((ex) => {
+                }).catch((ex) => {
                 console.error(ex)
                 setDataLoading(false)
                 setIntervalDataLoading(false)
@@ -262,7 +267,7 @@ export default function InvestingChart({data}: { data: never }) {
                     ) : (
                         <div className={"flex flex-col gap-1"}>
                             <div className={"flex font-medium items-center gap-3"}>
-                                {lastPrice && <AnimatedNumber value={lastPrice}/>}
+                                {lastPrice && <AnimatedNumber value={lastPrice} flash={true}/>}
                                 {
                                     pctChange != null && (
                                         <div

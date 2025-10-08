@@ -64,22 +64,34 @@ export default function Watchlist() {
     }
 
     useEffect(() => {
+        const wp: Promise<void>[] = []
+
         watchlist.forEach((item) => {
             const data1 = fetchInvestingChartDataChanges(item["id"])
             const data2 = fetchInvestingChartDataByInterval(item["id"], "PT1M", 60)
 
-            Promise.all([data1, data2])
-            .then(([data1, data2]) => {
-                setLastValues(prevObject => {
-                    return {
-                        ...prevObject,
-                        [item["id"]]: {
-                            pctChange: data1["pct_1d"],
-                            last: data2["data"][data2["data"].length - 1][4]
+            const p = Promise.all([data1, data2])
+                .then(([data1, data2]) => {
+                    setLastValues(prevObject => {
+                        return {
+                            ...prevObject,
+                            [item["id"]]: {
+                                pctChange: data1["pct_1d"],
+                                last: data2["data"][data2["data"].length - 1][4]
+                            }
                         }
-                    }
+                    })
                 })
-            })
+                .catch(ex => {
+                    console.error(ex)
+                    toast.error("Failed to update watchlist")
+                })
+
+            wp.push(p)
+        })
+
+        Promise.all(wp).then(() => {
+            console.log("Watchlist updated")
         })
     }, [watchlist])
 
@@ -184,7 +196,8 @@ export default function Watchlist() {
                                                     <ItemContent>
                                                         {lastValues[item["id"]] && lastValues[item["id"]]["last"] && (
                                                             <ItemTitle className={"flex justify-end w-full"}>
-                                                                {<AnimatedNumber value={lastValues[item["id"]]["last"]} flash={true}/>}
+                                                                {<AnimatedNumber value={lastValues[item["id"]]["last"]}
+                                                                                 flash={true}/>}
                                                             </ItemTitle>
                                                         )}
                                                         {
@@ -200,7 +213,8 @@ export default function Watchlist() {
                                                                         )
                                                                     }
                                                                     <span>
-                                                                        {<AnimatedNumber value={lastValues[item["id"]]["pctChange"]}/>}%
+                                                                        {<AnimatedNumber
+                                                                            value={lastValues[item["id"]]["pctChange"]}/>}%
                                                                     </span>
                                                                 </Badge>
                                                             )
@@ -276,7 +290,11 @@ export default function Watchlist() {
 
                     <DrawerFooter>
                         <Button variant={"outline"}>
-                            Remove from watchlist
+                            {selectedItem && watchlist.some(it => it["id"] === selectedItem["id"]) ? (
+                                <span>Remove from watchlist</span>
+                            ) : (
+                                <span>Add to watchlist</span>
+                            )}
                         </Button>
                     </DrawerFooter>
                 </DrawerContent>
