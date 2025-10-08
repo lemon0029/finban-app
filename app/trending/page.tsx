@@ -1,11 +1,8 @@
 import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/app-sidebar";
 import {SiteHeader} from "@/components/site-header";
-import GoldPrice from "@/app/trending/gold-price";
-import NDXIndex from "@/app/trending/ndx-index";
 import React from "react";
-import CSI300Index from "@/app/trending/csi-300-index";
-import GoldSpot from "@/app/trending/xau-usd";
+import Watchlist from "@/app/trending/watchlist";
 
 export default function Trending() {
     return (
@@ -22,12 +19,7 @@ export default function Trending() {
                 <SidebarInset>
                     <SiteHeader/>
                     <div className="@container/main flex flex-1 flex-col gap-2 p-4 md:p-6">
-                        <div className={"grid grid-cols-1 lg:grid-cols-2 gap-3"}>
-                            <GoldSpot />
-                            <NDXIndex/>
-                            <CSI300Index/>
-                            <GoldPrice/>
-                        </div>
+                        <Watchlist/>
                     </div>
                 </SidebarInset>
             </SidebarProvider>

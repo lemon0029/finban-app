@@ -109,16 +109,28 @@ export async function fetchNDXData(dateRange: string) {
     return await response.json();
 }
 
+export async function fetchInvestingChartDataChanges(id: number) {
+    const url = `https://pd-instruments.eu.api.investing.com/v1/instruments/${id}/price-changes`
+    const response = await fetch(url);
+    return await response.json();
+}
 
-export async function fetchXAUUSDData(period: string) {
-    const baseUrl = "https://api.investing.com/api/financialdata/68/historical/chart"
+export async function fetchInvestingChartDataByInterval(id: number, interval: string, pointsCount: number) {
+    const baseUrl = `https://api.investing.com/api/financialdata/${id}/historical/chart`
+
+    const response = await fetch(`${baseUrl}?interval=${interval}&pointscount=${pointsCount}`);
+    return await response.json();
+}
+
+export async function fetchInvestingChartData(id: number, symbol: string, period: string) {
+    const baseUrl = `https://api.investing.com/api/financialdata/${id}/historical/chart`
 
     if (period === "1d") {
         const today = new Date();
         const to = Math.floor(today.getTime() / 1000);
         const from = Math.floor(today.getTime() / 1000 - 86400);
 
-        const response = await fetch(`/api/investing-proxy/chart/xau-usd?from=${from}&to=${to}`);
+        const response = await fetch(`/api/investing-proxy/chart?symbol=${symbol}&from=${from}&to=${to}`);
         return await response.json();
     } else if (period === "1w") {
         const response = await fetch(`${baseUrl}?interval=PT30M&period=P1W&pointscount=160`);
@@ -142,4 +154,9 @@ export async function fetchXAUUSDData(period: string) {
         const response = await fetch(`${baseUrl}?interval=P1M&period=MAX&pointscount=160`);
         return await response.json();
     }
+}
+
+export async function investingSearch(query: string) {
+    const response = await fetch(`https://api.investing.com/api/search/v2/search?q=${query}`);
+    return await response.json();
 }

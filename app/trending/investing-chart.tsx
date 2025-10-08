@@ -1,35 +1,25 @@
 "use client"
 
-import {TrendingDown, TrendingUp} from "lucide-react"
 import {Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis} from "recharts"
-
-import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,} from "@/components/ui/card"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
-import {useEffect, useState} from "react";
-import {Spinner} from "@/components/ui/spinner";
-import {Badge} from "@/components/ui/badge";
+import React, {useEffect, useState} from "react";
 import {toast} from "sonner";
-import {getDateRangeLabel} from "@/lib/utils";
 import {fetchInvestingChartData} from "@/lib/api";
+import {Spinner} from "@/components/ui/spinner";
+import {TrendingDown, TrendingUp} from "lucide-react";
+import {getDateRangeLabel} from "@/lib/utils";
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
+import {Separator} from "@/components/ui/separator";
 import AnimatedNumber from "@/components/animated-number";
 
-const XAU_USD_CHART_CONFIG = {
+const INVESTING_CHART_CONFIG = {
     price: {
         label: "Price",
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig
 
-export default function GoldSpot() {
+export default function InvestingChart({data}: { data: never }) {
     const [dateRange, setDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
     const [chartData, setChartData] = useState([] as { time: string; price: number }[])
@@ -37,6 +27,9 @@ export default function GoldSpot() {
     const [previousClose, setPreviousClose] = useState<number | null>()
     const [latestPrice, setLatestPrice] = useState<number | null>()
     const [intervalDataLoading, setIntervalDataLoading] = useState(false)
+
+    const id = data['id']
+    const url = data['url']
 
     useEffect(() => {
         setDataLoading(true)
@@ -47,7 +40,7 @@ export default function GoldSpot() {
 
             let prices = [] as { time: string; price: number }[]
 
-            fetchInvestingChartData(68, "/currencies/xau-usd", dateRange).then(data => {
+            fetchInvestingChartData(id, url, dateRange).then(data => {
                 if (dateRange === "1d") {
                     const values = data["values"]
                     const c = values["c"]
@@ -102,7 +95,7 @@ export default function GoldSpot() {
                         }
                         return {
                             time: formattedTime,
-                            price: item[1]
+                            price: item[4]
                         }
                     })
                 }
@@ -112,16 +105,18 @@ export default function GoldSpot() {
                 if (dateRange === "1d") {
                     const configs = data["config"]
                     const pc = parseFloat(configs["lastClose"]);
-                    const lc = prices[prices.length - 1].price;
+                    const lc = prices && prices.length > 0 && prices[prices.length - 1].price;
 
-                    setLatestPrice(lc)
+                    if (lc) {
+                        setLatestPrice(lc)
+                    }
+
                     setPreviousClose(pc)
 
                     if (pc && lc) {
                         setPctChange((lc - pc) / lc * 100)
                     }
                 } else {
-                    setLatestPrice(null)
                     setPreviousClose(null)
 
                     if (prices.length >= 2) {
@@ -129,9 +124,9 @@ export default function GoldSpot() {
                         setPctChange(change)
 
                         if (change >= 0) {
-                            XAU_USD_CHART_CONFIG.price.color = "var(--color-profit)"
+                            INVESTING_CHART_CONFIG.price.color = "var(--color-profit)"
                         } else {
-                            XAU_USD_CHART_CONFIG.price.color = "var(--color-loss)"
+                            INVESTING_CHART_CONFIG.price.color = "var(--color-loss)"
                         }
                     } else {
                         setPctChange(0)
@@ -144,7 +139,7 @@ export default function GoldSpot() {
                 console.error(ex)
                 setDataLoading(false)
                 setIntervalDataLoading(false)
-                toast.error("Failed to fetch gold price data")
+                toast.error("Failed to fetch data")
             })
         }
 
@@ -155,7 +150,7 @@ export default function GoldSpot() {
             return () => clearInterval(interval)
         }
 
-    }, [dateRange])
+    }, [dateRange, id, url])
 
     const dataRanges = [
         {
@@ -193,57 +188,63 @@ export default function GoldSpot() {
     ]
 
     return (
-        <Card className={"gap-4"}>
-            <CardHeader>
-                <CardTitle>XAU/USD</CardTitle>
-                <CardDescription>Gold Spot US Dollar</CardDescription>
-                <CardAction>
-                    <Select value={dateRange}
-                            onValueChange={(value) => {
-                                setDateRange(value);
-                            }}>
-                        <SelectTrigger className="w-[80px]">
-                            <SelectValue/>
-                        </SelectTrigger>
-                        <SelectContent className="w-[var(--radix-select-trigger-width)] min-w-0">
-                            <SelectGroup>
-                                <SelectLabel>Period</SelectLabel>
-                                {
-                                    dataRanges.map((range) => (
-                                        <SelectItem key={range.value}
-                                                    value={range.value}
-                                                    disabled={intervalDataLoading || dataLoading}
-                                        >
-                                            {range.label}
-                                        </SelectItem>
-                                    ))
-                                }
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </CardAction>
-            </CardHeader>
-            <CardContent className={"px-4 relative"}>
-                {dataLoading && (<Spinner className={"size-5 absolute left-8 top-2 text-muted-foreground"}/>)}
-                {!dataLoading && latestPrice && (
-                    <Badge variant={"outline"} className={"absolute left-6 top-1"}>
-                        <AnimatedNumber value={latestPrice}/>
-                        <span className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>
-                            ({previousClose && latestPrice - previousClose > 0 ? "+" : ""}
-                            {previousClose && (<AnimatedNumber value={latestPrice - previousClose}/>)}
-                        </span>
-                        <span className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>
-                            {pctChange && <AnimatedNumber value={pctChange}/>}%)
-                        </span>
-                    </Badge>
-                )}
-                <ChartContainer config={XAU_USD_CHART_CONFIG}>
+        <>
+            <div className="flex gap-2 leading-none">
+                {
+                    dataLoading ? (
+                        <div className={"flex justify-start items-center text-muted-foreground h-[36px]"}>
+                            <Spinner className={"h-3 w-3 mr-2"}/> Updating...
+                        </div>
+                    ) : (
+                        <div className={"flex flex-col gap-1"}>
+                            <div className={"flex font-medium items-center gap-3"}>
+                                {latestPrice && <AnimatedNumber value={latestPrice}/>}
+                                <div className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
+                                    {pctChange > 0 ? <TrendingUp className="h-3 w-3 mr-1"/> :
+                                        <TrendingDown className={"h-3 w-3 mr-1"}/>}
+                                    <span className={`text-[${INVESTING_CHART_CONFIG.price.color}]`}>
+                                        <AnimatedNumber value={pctChange}/>%
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={"text-muted-foreground text-xs"}>
+                                {getDateRangeLabel(dateRange)}
+                            </div>
+                        </div>
+                    )
+                }
+            </div>
+
+            <Separator className={"mt-2 !h-[0.5px]"}/>
+
+            <ToggleGroup
+                type="single"
+                value={dateRange}
+                onValueChange={(val) => val && setDateRange(val)}
+                className="space-x-1 my-2"
+                size="sm"
+            >
+                {
+                    dataRanges.map((range) => (
+                        <ToggleGroupItem key={range.value}
+                                         value={range.value}
+                                         disabled={intervalDataLoading || dataLoading}
+                        >
+                            {range.label}
+                        </ToggleGroupItem>
+                    ))
+                }
+            </ToggleGroup>
+
+            <div className={"relative"}>
+                {intervalDataLoading && (<Spinner className={"size-5 absolute left-3 top-3 text-muted-foreground"}/>)}
+                <ChartContainer config={INVESTING_CHART_CONFIG} className={"w-full h-[300px]"}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
                         margin={{
-                            left: 5,
-                            right: 5,
+                            left: 2,
+                            right: 2,
                         }}
                     >
                         <defs>
@@ -268,9 +269,6 @@ export default function GoldSpot() {
                             axisLine={false}
                             tickMargin={10}
                             tickFormatter={(value) => {
-                                if (dataLoading) {
-                                    return value
-                                }
                                 return dateRange === "1d" ? value.substring(10) : value
                             }}
                         />
@@ -280,7 +278,6 @@ export default function GoldSpot() {
                         />
                         <Area
                             className="transition-opacity duration-500 ease-in-out"
-                            // style={{opacity: dataLoading ? 0 : 1}}
                             dataKey="price"
                             type="natural"
                             stroke="var(--color-price)"
@@ -302,26 +299,7 @@ export default function GoldSpot() {
 
                     </AreaChart>
                 </ChartContainer>
-            </CardContent>
-            <CardFooter className="flex-col items-start text-xs lg:text-sm">
-                <div className="flex gap-2 leading-none">
-                    {
-                        dataLoading ? (
-                            <div className={"flex justify-start items-center text-muted-foreground h-[22px]"}>
-                                <Spinner className={"h-4 w-4 mr-2"}/> Updating...
-                            </div>
-                        ) : (
-                            <div className={"flex justify-start items-center"}>
-                                {pctChange > 0 ? <TrendingUp className="h-4 w-4 mr-1"/> :
-                                    <TrendingDown className={"h-4 w-4 mr-1"}/>}
-                                <span>{pctChange >= 0 ? "Trending up" : "Trending down"} by <span
-                                    className={`text-[${XAU_USD_CHART_CONFIG.price.color}]`}>{pctChange.toFixed(2)}%</span> in <Badge
-                                    variant={"outline"}>{getDateRangeLabel(dateRange)}</Badge></span>
-                            </div>
-                        )
-                    }
-                </div>
-            </CardFooter>
-        </Card>
+            </div>
+        </>
     )
 }
