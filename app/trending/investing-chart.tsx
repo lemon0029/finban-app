@@ -4,7 +4,7 @@ import {Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis} from "recha
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
 import React, {useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
-import {fetchInvestingChartData, fetchInvestingChartDataChanges, fetchInvestingHistoricalData} from "@/lib/api";
+import {fetchInvestingChartData, fetchInvestingChartDataChanges} from "@/lib/api";
 import {Spinner} from "@/components/ui/spinner";
 import {TrendingDown, TrendingUp} from "lucide-react";
 import {getDateRangeLabel} from "@/lib/utils";
@@ -28,7 +28,7 @@ type ChartData = {
 function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): ChartData[] {
     const prices: ChartData[] = []
 
-    if (dateRange === "1d") {
+    if (dateRange === "1d" && data["c"] && data["t"]) {
         const c = data["c"]
         const t = data["t"]
 
@@ -96,6 +96,26 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
     }) as ChartData[]
 }
 
+async function fetchTodayTradingData(pairId: number) {
+    try {
+        const today = new Date();
+        const to = Math.floor(today.getTime() / 1000);
+        const from = Math.floor(today.getTime() / 1000 - 86400);
+
+        const response = await fetch(`/api/investing-proxy/historical-data?pairId=${pairId}&resolution=1&from=${from}&to=${to}`);
+
+        if (response.ok) {
+            return await response.json()
+        }
+
+        return fetchInvestingChartData(pairId, "", "1d")
+    } catch (ex) {
+        console.error(ex)
+    }
+
+    throw new Error("Failed to fetch data")
+}
+
 export default function InvestingChart({data}: { data: never }) {
     const [dateRange, setDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
@@ -131,11 +151,13 @@ export default function InvestingChart({data}: { data: never }) {
             setPreviousClose(data.last_close)
             setPctChange(data.pc / data.last_close * 100)
 
-            const date = new Date(data.timestamp / 60)
+            const date = new Date(Math.floor(data.timestamp / 1000 / 60) * 60)
             const formattedTime = date.toLocaleDateString("en-US", {
                 minute: "2-digit",
                 hour: "numeric"
             })
+
+            console.log(date)
 
             const lastData = {
                 time: formattedTime,
@@ -181,7 +203,7 @@ export default function InvestingChart({data}: { data: never }) {
 
             let prices = [] as { time: string; price: number }[]
 
-            const data2 = dateRange === "1d" ? fetchInvestingHistoricalData(pairId.current, "1")
+            const data2 = dateRange === "1d" ? fetchTodayTradingData(pairId.current)
                 : fetchInvestingChartData(pairId.current, symbolUrl.current, dateRange)
 
             Promise.all([data1, data2])
