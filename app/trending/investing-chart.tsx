@@ -2,7 +2,7 @@
 
 import {Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis} from "recharts"
 import {ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent,} from "@/components/ui/chart"
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
 import {fetchInvestingChartData} from "@/lib/api";
 import {Spinner} from "@/components/ui/spinner";
@@ -11,6 +11,7 @@ import {getDateRangeLabel} from "@/lib/utils";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Separator} from "@/components/ui/separator";
 import AnimatedNumber from "@/components/animated-number";
+import {Timeout} from "@radix-ui/primitive";
 
 const INVESTING_CHART_CONFIG = {
     price: {
@@ -28,8 +29,10 @@ export default function InvestingChart({data}: { data: never }) {
     const [latestPrice, setLatestPrice] = useState<number | null>()
     const [intervalDataLoading, setIntervalDataLoading] = useState(false)
 
-    const id = data['id']
-    const url = data['url']
+    const intervalId = useRef<Timeout | null>(null)
+
+    const id = useRef(data['id'])
+    const url = useRef(data['url'])
 
     useEffect(() => {
         setDataLoading(true)
@@ -40,101 +43,80 @@ export default function InvestingChart({data}: { data: never }) {
 
             let prices = [] as { time: string; price: number }[]
 
-            fetchInvestingChartData(id, url, dateRange).then(data => {
-                if (dateRange === "1d") {
-                    const values = data["values"]
-                    const c = values["c"]
-                    const t = values["t"]
+            fetchInvestingChartData(id.current, url.current, dateRange).then(data => {
+                prices = data["data"].map((item: never[]) => {
+                    const date = new Date(item[0])
+                    let formattedTime
 
-                    for (let i = 0; i < c.length; i++) {
-                        const date = new Date(t[i] * 1000)
-                        const formattedTime = date.toLocaleDateString("en-US", {
+                    if (dateRange === "1d") {
+                        formattedTime = date.toLocaleDateString("en-US", {
                             minute: "2-digit",
                             hour: "numeric"
                         })
-
-                        prices.push({
-                            time: formattedTime,
-                            price: c[i]
+                    } else if (dateRange === "1w") {
+                        formattedTime = date.toLocaleDateString("en-US", {
+                            minute: "2-digit",
+                            hour: "numeric",
+                            day: "numeric",
+                            month: "short",
+                        })
+                    } else if (dateRange === "1m") {
+                        formattedTime = date.toLocaleDateString("en-US", {
+                            hour: "2-digit",
+                            day: "numeric",
+                            month: "short",
+                        })
+                    } else if (dateRange === "3m" || dateRange === "6m") {
+                        formattedTime = date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                        })
+                    } else if (dateRange == "1y") {
+                        formattedTime = date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        })
+                    } else if (dateRange === "5y" || dateRange === "max") {
+                        formattedTime = date.toLocaleDateString("en-US", {
+                            month: "short",
+                            year: "numeric",
                         })
                     }
-                } else {
-                    prices = data["data"].map((item: never[]) => {
-                        const date = new Date(item[0])
-                        let formattedTime
-
-                        if (dateRange === "1w") {
-                            formattedTime = date.toLocaleDateString("en-US", {
-                                minute: "2-digit",
-                                hour: "numeric",
-                                day: "numeric",
-                                month: "short",
-                            })
-                        } else if (dateRange === "1m") {
-                            formattedTime = date.toLocaleDateString("en-US", {
-                                hour: "2-digit",
-                                day: "numeric",
-                                month: "short",
-                            })
-                        } else if (dateRange === "3m" || dateRange === "6m") {
-                            formattedTime = date.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                            })
-                        } else if (dateRange == "1y") {
-                            formattedTime = date.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                            })
-                        } else if (dateRange === "5y" || dateRange === "max") {
-                            formattedTime = date.toLocaleDateString("en-US", {
-                                month: "short",
-                                year: "numeric",
-                            })
-                        }
-                        return {
-                            time: formattedTime,
-                            price: item[4]
-                        }
-                    })
-                }
+                    return {
+                        time: formattedTime,
+                        price: item[4]
+                    }
+                })
 
                 setChartData(prices)
 
-                if (dateRange === "1d") {
-                    const configs = data["config"]
-                    const pc = parseFloat(configs["lastClose"]);
-                    const lc = prices && prices.length > 0 && prices[prices.length - 1].price;
+                setPreviousClose(null)
 
-                    if (lc) {
-                        setLatestPrice(lc)
-                    }
+                if (prices.length >= 2) {
+                    const lc = prices[prices.length - 1].price
+                    setLatestPrice(lc)
 
-                    setPreviousClose(pc)
+                    const change = ((lc - prices[0].price) / prices[0].price) * 100
+                    setPctChange(change)
 
-                    if (pc && lc) {
-                        setPctChange((lc - pc) / lc * 100)
+                    if (change >= 0) {
+                        INVESTING_CHART_CONFIG.price.color = "var(--color-profit)"
+                    } else {
+                        INVESTING_CHART_CONFIG.price.color = "var(--color-loss)"
                     }
                 } else {
-                    setPreviousClose(null)
-
-                    if (prices.length >= 2) {
-                        const change = ((prices[prices.length - 1].price - prices[0].price) / prices[0].price) * 100
-                        setPctChange(change)
-
-                        if (change >= 0) {
-                            INVESTING_CHART_CONFIG.price.color = "var(--color-profit)"
-                        } else {
-                            INVESTING_CHART_CONFIG.price.color = "var(--color-loss)"
-                        }
-                    } else {
-                        setPctChange(0)
-                    }
+                    setPctChange(0)
                 }
 
                 setDataLoading(false)
                 setIntervalDataLoading(false)
+
+                if (dateRange === "1d" && intervalId.current === null) {
+                    intervalId.current = setInterval(updateData, 10 * 1000)
+                    console.log("Starting interval", intervalId.current)
+                }
+
             }).catch((ex) => {
                 console.error(ex)
                 setDataLoading(false)
@@ -145,12 +127,13 @@ export default function InvestingChart({data}: { data: never }) {
 
         updateData()
 
-        if (dateRange === "1d") {
-            const interval = setInterval(updateData, 10 * 1000)
-            return () => clearInterval(interval)
+        return () => {
+            if (intervalId.current != null) {
+                clearInterval(intervalId.current)
+            }
         }
 
-    }, [dateRange, id, url])
+    }, [dateRange])
 
     const dataRanges = [
         {
@@ -199,7 +182,8 @@ export default function InvestingChart({data}: { data: never }) {
                         <div className={"flex flex-col gap-1"}>
                             <div className={"flex font-medium items-center gap-3"}>
                                 {latestPrice && <AnimatedNumber value={latestPrice}/>}
-                                <div className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
+                                <div
+                                    className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
                                     {pctChange > 0 ? <TrendingUp className="h-3 w-3 mr-1"/> :
                                         <TrendingDown className={"h-3 w-3 mr-1"}/>}
                                     <span className={`text-[${INVESTING_CHART_CONFIG.price.color}]`}>

@@ -59,16 +59,16 @@ export default function Watchlist() {
     }
 
     useEffect(() => {
-        watchlist.forEach(item => {
+        watchlist.forEach((item) => {
             fetchInvestingChartDataChanges(item["id"])
                 .then(data => {
-                    item["changes"] = data
+                    item["changes"] = data as never
                 })
 
             fetchInvestingChartDataByInterval(item["id"], "PT1M", 60)
                 .then(data => {
                     if (data && data["data"] && data["data"].length > 0) {
-                        item["latestPrice"] = data["data"][data["data"].length - 1][4]
+                        item["latestPrice"] = data["data"][data["data"].length - 1][4] as never
                     }
                 })
         })
@@ -218,9 +218,11 @@ export default function Watchlist() {
                         <Separator className={"my-1"}/>
                     </DrawerHeader>
 
-                    <ResponsiveContainer className={"px-4"}>
-                        <InvestingChart data={selectedItem}/>
-                    </ResponsiveContainer>
+                    {selectedItem && (
+                        <ResponsiveContainer className={"px-4"}>
+                            <InvestingChart data={selectedItem}/>
+                        </ResponsiveContainer>
+                    )}
 
                     <DrawerFooter>
                         <Button variant={"outline"}>

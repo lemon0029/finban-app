@@ -123,14 +123,10 @@ export async function fetchInvestingChartDataByInterval(id: number, interval: st
 }
 
 export async function fetchInvestingChartData(id: number, symbol: string, period: string) {
-    const baseUrl = `https://api.investing.com/api/financialdata/${id}/historical/chart`
+    const baseUrl = `https://api.investing.com/api/financialdata/${id}/historical/chart/`
 
     if (period === "1d") {
-        const today = new Date();
-        const to = Math.floor(today.getTime() / 1000);
-        const from = Math.floor(today.getTime() / 1000 - 86400);
-
-        const response = await fetch(`/api/investing-proxy/chart?symbol=${symbol}&from=${from}&to=${to}`);
+        const response = await fetch(`${baseUrl}?interval=PT1M&pointscount=160`);
         return await response.json();
     } else if (period === "1w") {
         const response = await fetch(`${baseUrl}?interval=PT30M&period=P1W&pointscount=160`);
