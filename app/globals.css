@@ -65,6 +65,7 @@
 }
 
 :root {
+    --color-text: rgb(0, 0, 0);
     --color-profit: rgb(19, 115, 51);
     --color-profit-background: rgba(19, 115, 51, 0.2);
     --color-loss: rgb(165, 14, 14);
@@ -104,6 +105,7 @@
 }
 
 .dark {
+    --color-text: rgb(255, 255, 255);
     --color-profit: rgb(19, 115, 51);
     --color-profit-background: rgba(19, 115, 51, 0.2);
     --color-loss: rgb(165, 14, 14);

@@ -4,7 +4,7 @@ import {Input} from "@/components/ui/input";
 import React, {useEffect, useRef, useState} from "react";
 import {CheckIcon, PlusIcon, Search, TrendingDownIcon, TrendingUpIcon, XIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {investingSearch} from "@/lib/api";
+import {fetchInvestingChartDataByInterval, fetchInvestingChartDataChanges, investingSearch} from "@/lib/api";
 import {toast} from "sonner";
 import {
     Item,
@@ -25,13 +25,12 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-data";
 import AnimatedNumber from "@/components/animated-number";
-import AnimatedNumberColor from "@/components/animated-number-color";
 
 export default function Watchlist() {
     const [searchTerm, setSearchTerm] = useState("")
     const [isSearching, setIsSearching] = useState(false)
     const [searchItems, setSearchItems] = useState([])
-    const [open, setOpen] = useState(false)
+    const [openDialog, setOpenDialog] = useState(false)
     const [selectedItem, setSelectedItem] = useState()
 
     const [watchlist, setWatchlist] = useState([])
@@ -65,11 +64,35 @@ export default function Watchlist() {
     }
 
     useEffect(() => {
+        watchlist.forEach((item) => {
+            const data1 = fetchInvestingChartDataChanges(item["id"])
+            const data2 = fetchInvestingChartDataByInterval(item["id"], "PT1M", 60)
+
+            Promise.all([data1, data2])
+            .then(([data1, data2]) => {
+                setLastValues(prevObject => {
+                    return {
+                        ...prevObject,
+                        [item["id"]]: {
+                            pctChange: data1["pct_1d"],
+                            last: data2["data"][data2["data"].length - 1][4]
+                        }
+                    }
+                })
+            })
+        })
+    }, [watchlist])
+
+    useEffect(() => {
 
         if (streaming.current != null) {
             streaming.current.close()
             streaming.current = null
             console.log("Closed stream")
+        }
+
+        if (openDialog) {
+            return;
         }
 
         if (watchlist.length === 0) {
@@ -97,7 +120,7 @@ export default function Watchlist() {
                 }
             })
         })
-    }, [watchlist]);
+    }, [watchlist, openDialog]);
 
     return (
         <div className="flex items-center gap-2 flex-wrap">
@@ -143,7 +166,7 @@ export default function Watchlist() {
                                         <Item className={"px-0"}
                                               onClick={() => {
                                                   setSelectedItem(item)
-                                                  setOpen(true)
+                                                  setOpenDialog(true)
                                               }}
                                         >
                                             <ItemContent>
@@ -161,7 +184,7 @@ export default function Watchlist() {
                                                     <ItemContent>
                                                         {lastValues[item["id"]] && lastValues[item["id"]]["last"] && (
                                                             <ItemTitle className={"flex justify-end w-full"}>
-                                                                {<AnimatedNumberColor value={lastValues[item["id"]]["last"]}/>}
+                                                                {<AnimatedNumber value={lastValues[item["id"]]["last"]} flash={true}/>}
                                                             </ItemTitle>
                                                         )}
                                                         {
@@ -222,7 +245,7 @@ export default function Watchlist() {
                 </div>
             )}
 
-            <Drawer open={open} onOpenChange={setOpen}>
+            <Drawer open={openDialog} onOpenChange={setOpenDialog}>
                 <DrawerContent className={"!rounded-t-2xl"}>
                     <DrawerHeader className={"pb-1"}>
                         <DialogTitle className={"mb-1 text-left flex flex-wrap w-full"}>

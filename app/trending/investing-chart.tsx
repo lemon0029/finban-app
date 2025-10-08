@@ -130,7 +130,7 @@ export default function InvestingChart({data}: { data: never }) {
             setPreviousClose(data.last_close)
             setPctChange(data.pc / data.last_close * 100)
 
-            const date = new Date(data.timestamp / 60 * 1000)
+            const date = new Date(data.timestamp / 60)
             const formattedTime = date.toLocaleDateString("en-US", {
                 minute: "2-digit",
                 hour: "numeric"
@@ -161,6 +161,12 @@ export default function InvestingChart({data}: { data: never }) {
                 return newData
             })
         })
+
+        return () => {
+            streaming.current?.close()
+            console.log("Closed stream for pairId: ", pairId)
+        }
+
     }, [dateRange])
 
     useEffect(() => {
@@ -258,14 +264,15 @@ export default function InvestingChart({data}: { data: never }) {
                             <div className={"flex font-medium items-center gap-3"}>
                                 {lastPrice && <AnimatedNumber value={lastPrice}/>}
                                 {
-                                    pctChange && (
+                                    pctChange != null && (
                                         <div
                                             className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
-                                            {pctChange > 0 ? <TrendingUp className="h-3 w-3 mr-1"/> :
+                                            {pctChange >= 0 ?
+                                                <TrendingUp className="h-3 w-3 mr-1"/> :
                                                 <TrendingDown className={"h-3 w-3 mr-1"}/>}
                                             <span className={`text-[${INVESTING_CHART_CONFIG.price.color}]`}>
-                                        <AnimatedNumber value={pctChange}/>%
-                                    </span>
+                                                <AnimatedNumber value={pctChange}/>%
+                                            </span>
                                         </div>
                                     )
                                 }
