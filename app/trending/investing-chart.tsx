@@ -186,6 +186,11 @@ export default function InvestingChart({data}: { data: never }) {
 
                 if (!newDataAppended) {
                     newData.push(lastData)
+
+                    if (newData.length > 1) {
+                        // 移除第一个点
+                        newData.shift()
+                    }
                 }
 
                 return newData
@@ -381,13 +386,14 @@ export default function InvestingChart({data}: { data: never }) {
                             content={<ChartTooltipContent indicator={"line"}/>}
                         />
                         <Area
-                            className="transition-opacity duration-500 ease-in-out"
                             dataKey="price"
-                            type="natural"
+                            type="monotone"
                             stroke="var(--color-price)"
                             fill="url(#xau-usd-price-fill-color)"
                             strokeWidth={2}
                             dot={false}
+                            animationDuration={300}
+                            animationEasing="ease-out"
                         />
                         {
                             previousClose && (
