@@ -126,6 +126,8 @@ export default function InvestingChart({data}: { data: never }) {
     const [intervalDataLoading, setIntervalDataLoading] = useState(false)
     const streaming = useRef<InvestingStreamingData>(null)
     const [historyDataLoaded, setHistoryDataLoaded] = useState(false)
+    const [askPrice, setAskPrice] = useState<number | null>()
+    const [bidPrice, setBidPrice] = useState<number | null>()
 
     const pairId = useRef<number>(data['id'])
     const symbolUrl = useRef(data['url'])
@@ -155,6 +157,8 @@ export default function InvestingChart({data}: { data: never }) {
             setLastPrice(data.last)
             setPreviousClose(data.last_close)
             setPctChange(data.pc / data.last_close * 100)
+            setAskPrice(data.ask)
+            setBidPrice(data.bid)
 
             const date = new Date(Math.floor(data.timestamp))
 
@@ -206,6 +210,11 @@ export default function InvestingChart({data}: { data: never }) {
 
     useEffect(() => {
         setDataLoading(true)
+
+        if (dateRange !== "1d") {
+            setBidPrice(null)
+            setAskPrice(null)
+        }
 
         const updateData = () => {
 
@@ -299,25 +308,41 @@ export default function InvestingChart({data}: { data: never }) {
                             <Spinner className={"h-3 w-3 mr-2"}/> Updating...
                         </div>
                     ) : (
-                        <div className={"flex flex-col gap-1"}>
-                            <div className={"flex font-medium items-center gap-3"}>
-                                {lastPrice && <AnimatedNumber value={lastPrice} flash={true}/>}
-                                {
-                                    pctChange != null && (
-                                        <div
-                                            className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
-                                            {pctChange >= 0 ?
-                                                <TrendingUp className="h-3 w-3 mr-1"/> :
-                                                <TrendingDown className={"h-3 w-3 mr-1"}/>}
-                                            <span className={`text-[${INVESTING_CHART_CONFIG.price.color}]`}>
+                        <div className={"flex justify-between w-full"}>
+                            <div className={"flex flex-col gap-1"}>
+                                <div className={"flex font-medium items-center gap-3"}>
+                                    {lastPrice && <AnimatedNumber value={lastPrice} flash={true}/>}
+                                    {
+                                        pctChange != null && (
+                                            <div
+                                                className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
+                                                {pctChange >= 0 ?
+                                                    <TrendingUp className="h-3 w-3 mr-1"/> :
+                                                    <TrendingDown className={"h-3 w-3 mr-1"}/>}
+                                                <span className={`text-[${INVESTING_CHART_CONFIG.price.color}]`}>
                                                 <AnimatedNumber value={pctChange}/>%
                                             </span>
-                                        </div>
-                                    )
-                                }
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                                <div className={"text-muted-foreground text-xs"}>
+                                    {getDateRangeLabel(dateRange)}
+                                </div>
                             </div>
-                            <div className={"text-muted-foreground text-xs"}>
-                                {getDateRangeLabel(dateRange)}
+
+                            <div className={"self-end flex flex-col font-mono"}>
+                                {askPrice && (
+                                    <span className={"text-muted-foreground text-xs w-22"}>
+                                        Ask: <AnimatedNumber value={askPrice}/>
+                                    </span>
+                                )}
+
+                                {bidPrice && (
+                                    <span className={"text-muted-foreground text-xs w-22"}>
+                                         Bid: <AnimatedNumber value={bidPrice}/>
+                                    </span>
+                                )}
                             </div>
                         </div>
                     )
@@ -330,7 +355,7 @@ export default function InvestingChart({data}: { data: never }) {
                 type="single"
                 value={dateRange}
                 onValueChange={(val) => val && setDateRange(val)}
-                className="space-x-1 my-2"
+                className="space-x-2 my-2"
                 size="sm"
             >
                 {
