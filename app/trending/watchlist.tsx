@@ -64,6 +64,29 @@ export default function Watchlist() {
         return watchlist
     }
 
+    const loadWatchlist = () => {
+        const items = localStorage.getItem("watchlist") || "[]"
+        setWatchlist(JSON.parse(items))
+    };
+
+    const removeFromWatchlist = (item: never) => {
+        const newWatchlist = watchlist.filter(wi => wi["id"] !== item["id"])
+
+        setWatchlist(newWatchlist)
+        localStorage.setItem("watchlist", JSON.stringify(newWatchlist))
+    }
+
+    const addToWatchlist = (item: never) => {
+        const newWatchlist = [...watchlist, item]
+
+        setWatchlist(newWatchlist)
+        localStorage.setItem("watchlist", JSON.stringify(newWatchlist))
+    }
+
+    useEffect(() => {
+        loadWatchlist()
+    }, [])
+
     useEffect(() => {
         const wp: Promise<void>[] = []
 
@@ -239,10 +262,10 @@ export default function Watchlist() {
                                                                     e.stopPropagation()
 
                                                                     if (watchlist.some(it => it["id"] === item["id"])) {
-                                                                        return
+                                                                        removeFromWatchlist(item)
+                                                                    } else {
+                                                                        addToWatchlist(item)
                                                                     }
-
-                                                                    setWatchlist([...watchlist, item])
                                                                 }}
                                                         >
                                                             {
@@ -296,7 +319,18 @@ export default function Watchlist() {
                     )}
 
                     <DrawerFooter>
-                        <Button variant={"outline"}>
+                        <Button variant={"outline"} onClick={() => {
+
+                            if (!selectedItem) {
+                                return
+                            }
+
+                            if (watchlist.some(it => it["id"] === selectedItem["id"])) {
+                                removeFromWatchlist(selectedItem)
+                            } else {
+                                addToWatchlist(selectedItem)
+                            }
+                        }}>
                             {selectedItem && watchlist.some(it => it["id"] === selectedItem["id"]) ? (
                                 <span>Remove from watchlist</span>
                             ) : (
