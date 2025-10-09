@@ -40,7 +40,7 @@ export default function Watchlist() {
 
     const streaming = useRef<InvestingStreamingData>(null)
 
-    const { data, isLoading } = useSWR(
+    const {data, isLoading} = useSWR(
         debouncedSearchTerm ? `https://api.investing.com/api/search/v2/search?q=${debouncedSearchTerm}` : null,
         (url) => fetch(url).then((res) => res.json())
     )
@@ -209,7 +209,7 @@ export default function Watchlist() {
                                             </ItemContent>
                                             {
                                                 searchTerm === "" && (
-                                                    <ItemContent>
+                                                    <ItemContent className={"font-mono"}>
                                                         {lastValues[item["id"]] && lastValues[item["id"]]["last"] && (
                                                             <ItemTitle className={"flex justify-end w-full"}>
                                                                 {<AnimatedNumber value={lastValues[item["id"]]["last"]}
@@ -228,7 +228,7 @@ export default function Watchlist() {
                                                                             <TrendingDownIcon className={"h-4 w-4"}/>
                                                                         )
                                                                     }
-                                                                    <span className={"font-mono"}>
+                                                                    <span>
                                                                         {<AnimatedNumber value={lastValues[item["id"]]["pctChange"]}/>}%
                                                                     </span>
                                                                 </Badge>
