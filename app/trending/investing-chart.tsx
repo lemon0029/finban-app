@@ -120,7 +120,7 @@ export default function InvestingChart({data}: { data: never }) {
     const [dateRange, setDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
     const [chartData, setChartData] = useState([] as { time: string; price: number }[])
-    const [pctChange, setPctChange] = useState(0)
+    const [pctChange, setPctChange] = useState<number | null>()
     const [previousClose, setPreviousClose] = useState<number | null>()
     const [lastPrice, setLastPrice] = useState<number | null>()
     const [intervalDataLoading, setIntervalDataLoading] = useState(false)
@@ -311,11 +311,16 @@ export default function InvestingChart({data}: { data: never }) {
                         <div className={"flex justify-between w-full"}>
                             <div className={"flex flex-col gap-1"}>
                                 <div className={"flex font-medium items-center gap-3"}>
-                                    {lastPrice && <AnimatedNumber value={lastPrice} flash={true}/>}
+                                    <div className={"w-22"}>
+                                        {lastPrice && <AnimatedNumber value={lastPrice} flash={true}/>}
+                                    </div>
+                                </div>
+                                <div className={"text-muted-foreground text-xs flex space-x-2"}>
+                                    <span>{getDateRangeLabel(dateRange)}</span>
                                     {
                                         pctChange != null && (
                                             <div
-                                                className={`text-xs flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
+                                                className={`text-xs shrink-0 min-w-[5ch] flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`}>
                                                 {pctChange >= 0 ?
                                                     <TrendingUp className="h-3 w-3 mr-1"/> :
                                                     <TrendingDown className={"h-3 w-3 mr-1"}/>}
@@ -325,9 +330,6 @@ export default function InvestingChart({data}: { data: never }) {
                                             </div>
                                         )
                                     }
-                                </div>
-                                <div className={"text-muted-foreground text-xs"}>
-                                    {getDateRangeLabel(dateRange)}
                                 </div>
                             </div>
 
