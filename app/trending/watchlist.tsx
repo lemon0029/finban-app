@@ -4,7 +4,7 @@ import {Input} from "@/components/ui/input";
 import React, {useEffect, useRef, useState} from "react";
 import {CheckIcon, PlusIcon, Search, TrendingDownIcon, TrendingUpIcon, XIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import {fetchInvestingChartDataByInterval, fetchInvestingChartDataChanges, investingSearch} from "@/lib/api";
+import {fetchInvestingChartDataByInterval, fetchInvestingChartDataChanges} from "@/lib/api";
 import {toast} from "sonner";
 import {
     Item,
@@ -25,11 +25,12 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-data";
 import AnimatedNumber from "@/components/animated-number";
+import {useDebounce} from "use-debounce";
+import useSWR from "swr";
 
 export default function Watchlist() {
     const [searchTerm, setSearchTerm] = useState("")
-    const [isSearching, setIsSearching] = useState(false)
-    const [searchItems, setSearchItems] = useState([])
+    const [debouncedSearchTerm] = useDebounce(searchTerm, 300)
     const [openDialog, setOpenDialog] = useState(false)
     const [selectedItem, setSelectedItem] = useState()
 
@@ -39,26 +40,14 @@ export default function Watchlist() {
 
     const streaming = useRef<InvestingStreamingData>(null)
 
-    const handleSearch = () => {
-        if (searchTerm) {
-            setIsSearching(true)
-
-            investingSearch(searchTerm)
-                .then(data => {
-                    setSearchItems(data["quotes"])
-                    setIsSearching(false)
-                })
-                .catch(ex => {
-                    console.error(ex)
-                    toast.error("Failed to invoke search action")
-                    setIsSearching(false)
-                })
-        }
-    }
+    const { data, isLoading } = useSWR(
+        debouncedSearchTerm ? `https://api.investing.com/api/search/v2/search?q=${debouncedSearchTerm}` : null,
+        (url) => fetch(url).then((res) => res.json())
+    )
 
     const getItems = () => {
-        if (searchTerm !== "") {
-            return searchItems
+        if (searchTerm !== "" && data) {
+            return data["quotes"] as never[]
         }
 
         return watchlist
@@ -123,14 +112,14 @@ export default function Watchlist() {
 
     useEffect(() => {
 
-        if (!historyDataLoaded) {
-            return
-        }
-
         if (streaming.current != null) {
             streaming.current.close()
             streaming.current = null
             console.log("Closed stream")
+        }
+
+        if (!historyDataLoaded) {
+            return
         }
 
         if (openDialog) {
@@ -172,10 +161,7 @@ export default function Watchlist() {
                     name="externalSearch"
                     placeholder="Search for stocks, ETFs & more"
                     value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value)
-                        handleSearch()
-                    }}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                 />
                 {searchTerm && (
@@ -192,7 +178,7 @@ export default function Watchlist() {
                 )}
             </div>
 
-            {isSearching ? (
+            {isLoading ? (
                 <div className={"flex flex-col w-full gap-3 mt-3"}>
                     <Skeleton className={"h-[80px]"}/>
                     <Skeleton className={"h-[80px]"}/>
@@ -242,9 +228,8 @@ export default function Watchlist() {
                                                                             <TrendingDownIcon className={"h-4 w-4"}/>
                                                                         )
                                                                     }
-                                                                    <span>
-                                                                        {<AnimatedNumber
-                                                                            value={lastValues[item["id"]]["pctChange"]}/>}%
+                                                                    <span className={"font-mono"}>
+                                                                        {<AnimatedNumber value={lastValues[item["id"]]["pctChange"]}/>}%
                                                                     </span>
                                                                 </Badge>
                                                             )
@@ -280,7 +265,7 @@ export default function Watchlist() {
                                                 )
                                             }
                                         </Item>
-                                        {index !== searchItems.length - 1 && <ItemSeparator/>}
+                                        {index !== getItems().length - 1 && <ItemSeparator/>}
                                     </React.Fragment>
                                 ))
                             }
