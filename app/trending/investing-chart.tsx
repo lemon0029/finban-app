@@ -329,7 +329,6 @@ export default function InvestingChart({data}: { data: never }) {
                                                     <AnimatedNumber value={pctChange}/>%
                                                 </span>
                                                 <span className={"ml-2"}>
-                                                    {valueChange > 0 ? "+" : ""}
                                                     <AnimatedNumber value={valueChange}/>
                                                 </span>
                                             </div>

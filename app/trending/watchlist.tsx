@@ -312,6 +312,7 @@ export default function Watchlist() {
 
                             if (watchlist.some(it => it["id"] === selectedItem["id"])) {
                                 removeFromWatchlist(selectedItem)
+                                setOpenDialog(false)
                             } else {
                                 addToWatchlist(selectedItem)
                             }
