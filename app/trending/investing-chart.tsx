@@ -151,26 +151,8 @@ export default function InvestingChart({data}: { data: never }) {
                 // 精度为 1 小时
                 date.setMinutes(0)
                 date.setSeconds(0)
-            } else if (dateRangeRef.current === "1m") {
-                // 精度为 5 小时
-                date.setHours(Math.floor(date.getHours() / 5) * 5)
-                date.setMinutes(0)
-                date.setSeconds(0)
-            } else if (dateRangeRef.current === "3m" || dateRangeRef.current === "6m") {
-                // 精度为 1 天
-                date.setHours(0)
-                date.setMinutes(0)
-                date.setSeconds(0)
-            } else if (dateRangeRef.current === "1y") {
-                // 精度为 1 周
-                date.setDate(date.getDate() - date.getDay())
-                date.setHours(0)
-                date.setMinutes(0)
-                date.setSeconds(0)
-            } else if (dateRangeRef.current === "5y" || dateRangeRef.current === "max") {
-                // 精度为 1 月
-                date.setDate(1)
-                date.setHours(0)
+            } else {
+                return;
             }
 
             const lastData = {

@@ -72,13 +72,13 @@ export function formatTime(dateRange: string, date: Date) {
         })
     } else if (dateRange === "1w") {
         return date.toLocaleDateString("en-US", {
-            hour: "numeric",
+            hour: "2-digit",
             day: "numeric",
             month: "short",
         })
     } else if (dateRange === "1m") {
         return date.toLocaleDateString("en-US", {
-            hour: "2-digit",
+            hour: "numeric",
             day: "numeric",
             month: "short",
         })

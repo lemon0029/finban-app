@@ -2,31 +2,22 @@
 
 import {Input} from "@/components/ui/input";
 import React, {useEffect, useRef, useState} from "react";
-import {CheckIcon, PlusIcon, Search, TrendingDownIcon, TrendingUpIcon, XIcon} from "lucide-react";
+import {Search, XIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {fetchInvestingChartDataByInterval, fetchInvestingChartDataChanges} from "@/lib/api";
 import {toast} from "sonner";
-import {
-    Item,
-    ItemActions,
-    ItemContent,
-    ItemDescription,
-    ItemGroup,
-    ItemSeparator,
-    ItemTitle
-} from "@/components/ui/item";
+import {ItemGroup, ItemSeparator} from "@/components/ui/item";
 import {Drawer, DrawerContent, DrawerFooter, DrawerHeader} from "@/components/ui/drawer";
 import {DialogDescription, DialogTitle} from "@/components/ui/dialog";
-import {Badge} from "@/components/ui/badge";
 import {Separator} from "@/components/ui/separator";
 import {ResponsiveContainer} from "recharts";
 import InvestingChart from "@/app/trending/investing-chart";
 import {Skeleton} from "@/components/ui/skeleton";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-data";
-import AnimatedNumber from "@/components/animated-number";
 import {useDebounce} from "use-debounce";
 import useSWR from "swr";
+import {WatchlistItem} from "@/app/trending/watchlist-item";
 
 export default function Watchlist() {
     const [searchTerm, setSearchTerm] = useState("")
@@ -191,80 +182,17 @@ export default function Watchlist() {
                             {
                                 getItems().map((item, index) => (
                                     <React.Fragment key={item["id"]}>
-                                        <Item className={"px-0"}
-                                              onClick={() => {
-                                                  setSelectedItem(item)
-                                                  setOpenDialog(true)
-                                              }}
-                                        >
-                                            <ItemContent>
-                                                <ItemTitle className={"font-bold"}>
-                                                    {item["symbol"]}
-                                                    {item["type"] && <Badge className={"text-[8px]"}
-                                                                            variant={"secondary"}>{item["type"]}</Badge>}
-                                                </ItemTitle>
-                                                <ItemDescription className={"overflow-ellipsis line-clamp-1"}>
-                                                    {item["description"]}
-                                                </ItemDescription>
-                                            </ItemContent>
-                                            {
-                                                searchTerm === "" && (
-                                                    <ItemContent>
-                                                        {lastValues[item["id"]] && lastValues[item["id"]]["last"] && (
-                                                            <ItemTitle className={"flex justify-end w-full"}>
-                                                                {<AnimatedNumber value={lastValues[item["id"]]["last"]}
-                                                                                 bgFlashEnabled={true}/>}
-                                                            </ItemTitle>
-                                                        )}
-                                                        {
-                                                            lastValues[item["id"]] && lastValues[item["id"]]["pctChange"] && (
-                                                                <Badge variant={"secondary"}
-                                                                       className={`${lastValues[item["id"]]["pctChange"] > 0 ? "bg-[var(--color-profit)]/10 text-[var(--color-profit)]" : "bg-[var(--color-loss)]/10 text-[var(--color-loss)]"}`}
-                                                                >
-                                                                    {
-                                                                        lastValues[item["id"]]["pctChange"] > 0 ? (
-                                                                            <TrendingUpIcon className={"h-4 w-4"}/>
-                                                                        ) : (
-                                                                            <TrendingDownIcon className={"h-4 w-4"}/>
-                                                                        )
-                                                                    }
-                                                                    <span>
-                                                                        {<AnimatedNumber value={lastValues[item["id"]]["pctChange"]}/>}%
-                                                                    </span>
-                                                                </Badge>
-                                                            )
-                                                        }
-                                                    </ItemContent>
-                                                )
-                                            }
-                                            {
-                                                searchTerm !== "" && (
-                                                    <ItemActions>
-                                                        <Button variant="ghost"
-                                                                size="icon"
-                                                                className="rounded-full"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation()
-
-                                                                    if (watchlist.some(it => it["id"] === item["id"])) {
-                                                                        removeFromWatchlist(item)
-                                                                    } else {
-                                                                        addToWatchlist(item)
-                                                                    }
-                                                                }}
-                                                        >
-                                                            {
-                                                                watchlist.some(it => it["id"] === item["id"]) ? (
-                                                                    <CheckIcon className="h-4 w-4"/>
-                                                                ) : (
-                                                                    <PlusIcon className="h-4 w-4"/>
-                                                                )
-                                                            }
-                                                        </Button>
-                                                    </ItemActions>
-                                                )
-                                            }
-                                        </Item>
+                                        <WatchlistItem item={item}
+                                                       isSearchResultItem={searchTerm !== ""}
+                                                       isInWatchlist={watchlist.some(wi => wi["id"] === item["id"])}
+                                                       lastValue={lastValues[item["id"]]}
+                                                       addToWatchlist={addToWatchlist}
+                                                       removeFromWatchlist={removeFromWatchlist}
+                                                       onClick={() => {
+                                                           setOpenDialog(true)
+                                                           setSelectedItem(item)
+                                                       }}
+                                        />
                                         {index !== getItems().length - 1 && <ItemSeparator/>}
                                     </React.Fragment>
                                 ))
