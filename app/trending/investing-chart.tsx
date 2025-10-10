@@ -92,6 +92,17 @@ export default function InvestingChart({data}: { data: never }) {
 
     const pairId = useRef<number>(data['id'])
     const symbolUrl = useRef(data['url'])
+    const historyPreviousClose = useRef<number | null>(null)
+    const dateRangeRef = useRef("1d")
+
+    useEffect(() => {
+        return () => {
+            if (streaming.current != null) {
+                streaming.current.close()
+                console.log("Closed stream, pid: " + data["id"])
+            }
+        }
+    }, [data]);
 
     useEffect(() => {
 
@@ -99,11 +110,8 @@ export default function InvestingChart({data}: { data: never }) {
             return
         }
 
-        if (dateRange !== "1d" && streaming.current != null) {
-            streaming.current.close()
-            console.log("Closed stream for pairId: ", pairId.current)
-            setPreviousClose(null)
-            return
+        if (streaming.current != null) {
+            return;
         }
 
         streaming.current = new InvestingStreamingData();
@@ -116,20 +124,57 @@ export default function InvestingChart({data}: { data: never }) {
         streaming.current.on('data', (data: PidInfo) => {
             console.log(data)
             setLastPrice(data.last)
-            setPreviousClose(data.last_close)
-            setPctChange(data.pc / data.last_close * 100)
+
+            if (!historyDataLoaded) {
+                return
+            }
+
+            if (dateRangeRef.current === "1d") {
+                setPreviousClose(data.last_close)
+                setPctChange(data.pc / data.last_close * 100)
+                setValueChange(data.pc)
+            } else if (historyPreviousClose.current != null) {
+                setPctChange((data.last - historyPreviousClose.current) / historyPreviousClose.current * 100)
+                setValueChange(data.last - historyPreviousClose.current)
+            }
+
             setAskPrice(data.ask)
             setBidPrice(data.bid)
-            setValueChange(data.pc)
 
             const date = new Date(Math.floor(data.timestamp))
 
-            // 这里拿到的时间是精度到秒，但是需要显示的精度是五分钟
-            date.setMinutes(Math.floor(date.getMinutes() / 5) * 5)
-            date.setSeconds(0)
+            if (dateRangeRef.current === "1d") {
+                // 这里拿到的时间是精度到秒，但是需要显示的精度是五分钟
+                date.setMinutes(Math.floor(date.getMinutes() / 5) * 5)
+                date.setSeconds(0)
+            } else if (dateRangeRef.current === "1w") {
+                // 精度为 1 小时
+                date.setMinutes(0)
+                date.setSeconds(0)
+            } else if (dateRangeRef.current === "1m") {
+                // 精度为 5 小时
+                date.setHours(Math.floor(date.getHours() / 5) * 5)
+                date.setMinutes(0)
+                date.setSeconds(0)
+            } else if (dateRangeRef.current === "3m" || dateRangeRef.current === "6m") {
+                // 精度为 1 天
+                date.setHours(0)
+                date.setMinutes(0)
+                date.setSeconds(0)
+            } else if (dateRangeRef.current === "1y") {
+                // 精度为 1 周
+                date.setDate(date.getDate() - date.getDay())
+                date.setHours(0)
+                date.setMinutes(0)
+                date.setSeconds(0)
+            } else if (dateRangeRef.current === "5y" || dateRangeRef.current === "max") {
+                // 精度为 1 月
+                date.setDate(1)
+                date.setHours(0)
+            }
 
             const lastData = {
-                time: formatTime(dateRange, date),
+                time: formatTime(dateRangeRef.current, date),
                 price: data.last
             }
 
@@ -159,20 +204,10 @@ export default function InvestingChart({data}: { data: never }) {
             })
         })
 
-        return () => {
-            streaming.current?.close()
-            console.log("Closed stream for pairId: ", pairId)
-        }
-
-    }, [dateRange, historyDataLoaded])
+    }, [historyDataLoaded])
 
     useEffect(() => {
         setDataLoading(true)
-
-        if (dateRange !== "1d") {
-            setBidPrice(null)
-            setAskPrice(null)
-        }
 
         const updateData = () => {
 
@@ -195,14 +230,23 @@ export default function InvestingChart({data}: { data: never }) {
                         INVESTING_CHART_CONFIG.price.color = "var(--color-loss)"
                     }
 
-                    setPctChange(change)
-
                     prices = loadChartData(dateRange, data2)
 
                     if (prices && prices.length > 0) {
-                        setLastPrice(prices[prices.length - 1].price)
+                        const lastPrice = prices[prices.length - 1].price;
+
+                        setLastPrice(lastPrice)
+                        historyPreviousClose.current = lastPrice / (1 + change / 100)
                     }
 
+
+                    if (dateRange === "1d") {
+                        historyPreviousClose.current = null
+                    }
+
+                    dateRangeRef.current = dateRange
+
+                    setPctChange(change)
                     setActiveDateRange(dateRange)
                     setChartData(prices)
                     setDataLoading(false)
@@ -270,16 +314,14 @@ export default function InvestingChart({data}: { data: never }) {
                         <div className={"flex justify-between w-full"}>
                             <div className={"flex flex-col gap-1"}>
                                 <div className={"flex font-medium items-center gap-3"}>
-                                    <div className={"font-mono"}>
-                                        {lastPrice && <AnimatedNumber value={lastPrice} flash={true}/>}
-                                    </div>
+                                    {lastPrice && <AnimatedNumber value={lastPrice} bgFlashEnabled={true}/>}
                                 </div>
                                 <div className={"text-muted-foreground text-xs flex space-x-2"}>
                                     <span>{getDateRangeLabel(dateRange)}</span>
                                     {
                                         pctChange != null && valueChange != null && (
                                             <div className={
-                                                `text-xs shrink-0 min-w-[5ch] flex items-center text-[${INVESTING_CHART_CONFIG.price.color}] font-mono`
+                                                `text-xs shrink-0 min-w-[5ch] flex items-center text-[${INVESTING_CHART_CONFIG.price.color}]`
                                             }>
                                                 {pctChange >= 0 ?
                                                     <TrendingUp className="h-3 w-3 mr-1"/> :
@@ -288,6 +330,7 @@ export default function InvestingChart({data}: { data: never }) {
                                                     <AnimatedNumber value={pctChange}/>%
                                                 </span>
                                                 <span className={"ml-2"}>
+                                                    {valueChange >= 0 ? "+" : ""}
                                                     <AnimatedNumber value={valueChange}/>
                                                 </span>
                                             </div>
@@ -390,10 +433,10 @@ export default function InvestingChart({data}: { data: never }) {
                             animationEasing="ease-out"
                         />
                         {
-                            previousClose && (
+                            activeDateRange === "1d" && previousClose && (
                                 <ReferenceLine orientation="right" y={previousClose} stroke={"oklch(55.1% 0.027 264.364)"}
                                                strokeDasharray="3 3" label={{
-                                    value: `Prev Close: ${previousClose}`,
+                                    value: `Prev Close: ${previousClose.toFixed(2)}`,
                                     color: "oklch(55.1% 0.027 264.364)",
                                     position: "top",
                                     fontSize: 10,

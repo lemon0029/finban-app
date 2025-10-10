@@ -138,7 +138,7 @@ export async function fetchInvestingChartData(id: number, symbol: string, period
         const response = await fetch(`${baseUrl}?interval=PT5M&period=P1D&pointscount=160`);
         return await response.json();
     } else if (period === "1w") {
-        const response = await fetch(`${baseUrl}?interval=PT30M&period=P1W&pointscount=160`);
+        const response = await fetch(`${baseUrl}?interval=PT1H&period=P1W&pointscount=160`);
         return await response.json();
     } else if (period === "1m") {
         const response = await fetch(`${baseUrl}?interval=PT5H&period=P1M&pointscount=160`);

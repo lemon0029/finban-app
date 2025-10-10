@@ -209,11 +209,11 @@ export default function Watchlist() {
                                             </ItemContent>
                                             {
                                                 searchTerm === "" && (
-                                                    <ItemContent className={"font-mono"}>
+                                                    <ItemContent>
                                                         {lastValues[item["id"]] && lastValues[item["id"]]["last"] && (
                                                             <ItemTitle className={"flex justify-end w-full"}>
                                                                 {<AnimatedNumber value={lastValues[item["id"]]["last"]}
-                                                                                 flash={true}/>}
+                                                                                 bgFlashEnabled={true}/>}
                                                             </ItemTitle>
                                                         )}
                                                         {

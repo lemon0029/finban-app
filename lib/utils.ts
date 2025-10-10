@@ -72,7 +72,6 @@ export function formatTime(dateRange: string, date: Date) {
         })
     } else if (dateRange === "1w") {
         return date.toLocaleDateString("en-US", {
-            minute: "2-digit",
             hour: "numeric",
             day: "numeric",
             month: "short",
