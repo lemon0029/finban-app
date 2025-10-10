@@ -7,7 +7,7 @@ import {toast} from "sonner";
 import {fetchInvestingChartData, fetchInvestingChartDataChanges} from "@/lib/api";
 import {Spinner} from "@/components/ui/spinner";
 import {TrendingDown, TrendingUp} from "lucide-react";
-import {getDateRangeLabel} from "@/lib/utils";
+import {formatTime, getDateRangeLabel} from "@/lib/utils";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Separator} from "@/components/ui/separator";
 import AnimatedNumber from "@/components/animated-number";
@@ -36,13 +36,9 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
             const time = t[i] as unknown as number
             const closeValue = c[i] as unknown as number
             const date = new Date(time * 1000)
-            const formattedTime = date.toLocaleDateString("en-US", {
-                minute: "2-digit",
-                hour: "numeric"
-            })
 
             prices.push({
-                time: formattedTime,
+                time: formatTime(dateRange, date),
                 price: closeValue
             })
         }
@@ -52,45 +48,8 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
 
     return data["data"].map((item: never[]) => {
         const date = new Date(item[0])
-        let formattedTime
-
-        if (dateRange === "1d") {
-            formattedTime = date.toLocaleDateString("en-US", {
-                minute: "2-digit",
-                hour: "numeric"
-            })
-        } else if (dateRange === "1w") {
-            formattedTime = date.toLocaleDateString("en-US", {
-                minute: "2-digit",
-                hour: "numeric",
-                day: "numeric",
-                month: "short",
-            })
-        } else if (dateRange === "1m") {
-            formattedTime = date.toLocaleDateString("en-US", {
-                hour: "2-digit",
-                day: "numeric",
-                month: "short",
-            })
-        } else if (dateRange === "3m" || dateRange === "6m") {
-            formattedTime = date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-            })
-        } else if (dateRange == "1y") {
-            formattedTime = date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-            })
-        } else if (dateRange === "5y" || dateRange === "all_time") {
-            formattedTime = date.toLocaleDateString("en-US", {
-                month: "short",
-                year: "numeric",
-            })
-        }
         return {
-            time: formattedTime,
+            time: formatTime(dateRange, date),
             price: item[4]
         }
     }) as ChartData[]
@@ -118,6 +77,7 @@ async function fetchTodayTradingData(pairId: number) {
 
 export default function InvestingChart({data}: { data: never }) {
     const [dateRange, setDateRange] = useState("1d")
+    const [activeDateRange, setActiveDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
     const [chartData, setChartData] = useState([] as { time: string; price: number }[])
     const [pctChange, setPctChange] = useState<number | null>()
@@ -164,16 +124,12 @@ export default function InvestingChart({data}: { data: never }) {
 
             const date = new Date(Math.floor(data.timestamp))
 
-            // 这里拿到的时间是精度到秒到，但是需要显示的精度是分钟
+            // 这里拿到的时间是精度到秒，但是需要显示的精度是五分钟
+            date.setMinutes(Math.floor(date.getMinutes() / 5) * 5)
             date.setSeconds(0)
 
-            const formattedTime = date.toLocaleDateString("en-US", {
-                minute: "2-digit",
-                hour: "numeric"
-            })
-
             const lastData = {
-                time: formattedTime,
+                time: formatTime(dateRange, date),
                 price: data.last
             }
 
@@ -247,6 +203,7 @@ export default function InvestingChart({data}: { data: never }) {
                         setLastPrice(prices[prices.length - 1].price)
                     }
 
+                    setActiveDateRange(dateRange)
                     setChartData(prices)
                     setDataLoading(false)
                     setIntervalDataLoading(false)
@@ -321,7 +278,9 @@ export default function InvestingChart({data}: { data: never }) {
                                     <span>{getDateRangeLabel(dateRange)}</span>
                                     {
                                         pctChange != null && valueChange != null && (
-                                            <div className={`text-xs shrink-0 min-w-[5ch] flex items-center text-[${INVESTING_CHART_CONFIG.price.color}] font-mono`}>
+                                            <div className={
+                                                `text-xs shrink-0 min-w-[5ch] flex items-center text-[${INVESTING_CHART_CONFIG.price.color}] font-mono`
+                                            }>
                                                 {pctChange >= 0 ?
                                                     <TrendingUp className="h-3 w-3 mr-1"/> :
                                                     <TrendingDown className={"h-3 w-3 mr-1"}/>}
@@ -378,7 +337,7 @@ export default function InvestingChart({data}: { data: never }) {
 
             <div className={"relative"}>
                 {intervalDataLoading && (<Spinner className={"size-5 absolute left-3 top-3 text-muted-foreground"}/>)}
-                <ChartContainer config={INVESTING_CHART_CONFIG} className={"w-full"}>
+                <ChartContainer config={INVESTING_CHART_CONFIG} className={"w-full max-h-[300px]"}>
                     <AreaChart
                         accessibilityLayer
                         data={chartData}
@@ -388,7 +347,7 @@ export default function InvestingChart({data}: { data: never }) {
                         }}
                     >
                         <defs>
-                            <linearGradient id="xau-usd-price-fill-color" x1="0" y1="0" x2="0" y2="1">
+                            <linearGradient id="investing-chart-fill-color" x1="0" y1="0" x2="0" y2="1">
                                 <stop
                                     offset="5%"
                                     stopColor="var(--color-price)"
@@ -409,7 +368,11 @@ export default function InvestingChart({data}: { data: never }) {
                             axisLine={false}
                             tickMargin={10}
                             tickFormatter={(value) => {
-                                return dateRange === "1d" ? value.substring(10) : value
+                                if (activeDateRange == "1d") {
+                                    return value.split(",")[2].trim()
+                                }
+
+                                return value
                             }}
                         />
                         <ChartTooltip
@@ -420,7 +383,7 @@ export default function InvestingChart({data}: { data: never }) {
                             dataKey="price"
                             type="monotone"
                             stroke="var(--color-price)"
-                            fill="url(#xau-usd-price-fill-color)"
+                            fill="url(#investing-chart-fill-color)"
                             strokeWidth={2}
                             dot={false}
                             animationDuration={300}

@@ -60,3 +60,50 @@ export function getDateRangeLabel(dateRange: string) {
 
     return "unknown period"
 }
+
+export function formatTime(dateRange: string, date: Date) {
+    if (dateRange === "1d") {
+        return date.toLocaleDateString("en-US", {
+            minute: "2-digit",
+            hour: "numeric",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    } else if (dateRange === "1w") {
+        return date.toLocaleDateString("en-US", {
+            minute: "2-digit",
+            hour: "numeric",
+            day: "numeric",
+            month: "short",
+        })
+    } else if (dateRange === "1m") {
+        return date.toLocaleDateString("en-US", {
+            hour: "2-digit",
+            day: "numeric",
+            month: "short",
+        })
+    } else if (dateRange === "3m" || dateRange === "6m") {
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+        })
+    } else if (dateRange == "1y") {
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+        })
+    } else if (dateRange === "5y" || dateRange === "all_time") {
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "numeric",
+        })
+    }
+
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    })
+}

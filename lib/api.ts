@@ -135,7 +135,7 @@ export async function fetchInvestingChartData(id: number, symbol: string, period
     const baseUrl = `https://api.investing.com/api/financialdata/${id}/historical/chart/`
 
     if (period === "1d") {
-        const response = await fetch(`${baseUrl}?interval=PT1M&pointscount=160`);
+        const response = await fetch(`${baseUrl}?interval=PT5M&period=P1D&pointscount=160`);
         return await response.json();
     } else if (period === "1w") {
         const response = await fetch(`${baseUrl}?interval=PT30M&period=P1W&pointscount=160`);
