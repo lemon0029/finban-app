@@ -7,7 +7,7 @@ import {toast} from "sonner";
 import {fetchInvestingChartData, fetchInvestingChartDataChanges} from "@/lib/api";
 import {Spinner} from "@/components/ui/spinner";
 import {TrendingDown, TrendingUp} from "lucide-react";
-import {formatTime, getDateRangeLabel} from "@/lib/utils";
+import {formatTick, formatTooltipLabel, getDateRangeLabel} from "@/lib/utils";
 import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Separator} from "@/components/ui/separator";
 import AnimatedNumber from "@/components/animated-number";
@@ -21,7 +21,7 @@ const INVESTING_CHART_CONFIG = {
 } satisfies ChartConfig
 
 type ChartData = {
-    time: string;
+    time: number;
     price: number;
 }
 
@@ -35,10 +35,9 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
         for (let i = 0; i < c.length; i++) {
             const time = t[i] as unknown as number
             const closeValue = c[i] as unknown as number
-            const date = new Date(time * 1000)
 
             prices.push({
-                time: formatTime(dateRange, date),
+                time: time * 1000,
                 price: closeValue
             })
         }
@@ -47,39 +46,18 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
     }
 
     return data["data"].map((item: never[]) => {
-        const date = new Date(item[0])
         return {
-            time: formatTime(dateRange, date),
+            time: item[0],
             price: item[4]
         }
     }) as ChartData[]
-}
-
-async function fetchTodayTradingData(pairId: number) {
-    try {
-        const today = new Date();
-        const to = Math.floor(today.getTime() / 1000);
-        const from = Math.floor(today.getTime() / 1000 - 86400);
-
-        const response = await fetch(`/api/investing-proxy/historical-data?pairId=${pairId}&resolution=1&from=${from}&to=${to}`);
-
-        if (response.ok) {
-            return await response.json()
-        }
-
-        return fetchInvestingChartData(pairId, "", "1d")
-    } catch (ex) {
-        console.error(ex)
-    }
-
-    throw new Error("Failed to fetch data")
 }
 
 export default function InvestingChart({data}: { data: never }) {
     const [dateRange, setDateRange] = useState("1d")
     const [activeDateRange, setActiveDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
-    const [chartData, setChartData] = useState([] as { time: string; price: number }[])
+    const [chartData, setChartData] = useState([] as { time: number; price: number }[])
     const [pctChange, setPctChange] = useState<number | null>()
     const [valueChange, setValueChange] = useState<number | null>()
     const [previousClose, setPreviousClose] = useState<number | null>()
@@ -141,7 +119,7 @@ export default function InvestingChart({data}: { data: never }) {
             setAskPrice(data.ask)
             setBidPrice(data.bid)
 
-            const date = new Date(Math.floor(data.timestamp))
+            const date = new Date(data.timestamp)
 
             if (dateRangeRef.current === "1d") {
                 // 这里拿到的时间是精度到秒，但是需要显示的精度是五分钟
@@ -156,7 +134,7 @@ export default function InvestingChart({data}: { data: never }) {
             }
 
             const lastData = {
-                time: formatTime(dateRangeRef.current, date),
+                time: date.getTime(),
                 price: data.last
             }
 
@@ -196,11 +174,7 @@ export default function InvestingChart({data}: { data: never }) {
             setIntervalDataLoading(true)
 
             const data1 = fetchInvestingChartDataChanges(pairId.current)
-
-            let prices = [] as { time: string; price: number }[]
-
-            const data2 = dateRange === "1d" ? fetchTodayTradingData(pairId.current)
-                : fetchInvestingChartData(pairId.current, symbolUrl.current, dateRange)
+            const data2 = fetchInvestingChartData(pairId.current, symbolUrl.current, dateRange)
 
             Promise.all([data1, data2])
                 .then(([data1, data2]) => {
@@ -212,7 +186,7 @@ export default function InvestingChart({data}: { data: never }) {
                         INVESTING_CHART_CONFIG.price.color = "var(--color-loss)"
                     }
 
-                    prices = loadChartData(dateRange, data2)
+                    const prices = loadChartData(dateRange, data2)
 
                     if (prices && prices.length > 0) {
                         const lastPrice = prices[prices.length - 1].price;
@@ -392,15 +366,12 @@ export default function InvestingChart({data}: { data: never }) {
                             tickLine={false}
                             axisLine={false}
                             tickMargin={10}
-                            tickFormatter={(value) => {
-                                if (activeDateRange == "1d") {
-                                    return value.split(",")[2].trim()
-                                }
-
-                                return value
-                            }}
+                            tickFormatter={(value) => formatTick(activeDateRange, value)}
                         />
                         <ChartTooltip
+                            labelFormatter={(_, payload) => {
+                                return formatTooltipLabel(activeDateRange, payload[0].payload["time"]);
+                            }}
                             cursor={false}
                             content={<ChartTooltipContent indicator={"line"}/>}
                         />

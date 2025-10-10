@@ -61,15 +61,15 @@ export function getDateRangeLabel(dateRange: string) {
     return "unknown period"
 }
 
-export function formatTime(dateRange: string, date: Date) {
+export function formatTick(dateRange: string, time: number) {
+    const date = new Date(time);
+
     if (dateRange === "1d") {
-        return date.toLocaleDateString("en-US", {
-            minute: "2-digit",
-            hour: "numeric",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-        })
+        const hour = date.getHours();
+        const minute = date.getMinutes();
+
+        // to 2 digits
+        return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
     } else if (dateRange === "1w") {
         return date.toLocaleDateString("en-US", {
             hour: "2-digit",
@@ -86,6 +86,55 @@ export function formatTime(dateRange: string, date: Date) {
         return date.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
+        })
+    } else if (dateRange == "1y") {
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+        })
+    } else if (dateRange === "5y" || dateRange === "all_time") {
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            year: "numeric",
+        })
+    }
+
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    })
+}
+
+export function formatTooltipLabel(dateRange: string, time: number) {
+    const date = new Date(time);
+
+    if (dateRange === "1d") {
+        return date.toLocaleDateString("en-US", {
+            minute: "2-digit",
+            hour: "numeric",
+            month: "short",
+            day: "numeric",
+        })
+    } else if (dateRange === "1w") {
+        return date.toLocaleDateString("en-US", {
+            hour: "2-digit",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
+    } else if (dateRange === "1m") {
+        return date.toLocaleDateString("en-US", {
+            hour: "numeric",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
+    } else if (dateRange === "3m" || dateRange === "6m") {
+        return date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
         })
     } else if (dateRange == "1y") {
         return date.toLocaleDateString("en-US", {
