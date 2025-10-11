@@ -12,7 +12,7 @@ import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Separator} from "@/components/ui/separator";
 import AnimatedNumber from "@/components/animated-number";
 import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-data";
-import {WatchlistItemDTO} from "@/lib/types";
+import {InvestingChartDataPoint, WatchlistItemDTO} from "@/lib/types";
 
 const INVESTING_CHART_CONFIG = {
     price: {
@@ -21,13 +21,8 @@ const INVESTING_CHART_CONFIG = {
     },
 } satisfies ChartConfig
 
-type ChartData = {
-    time: number;
-    price: number;
-}
-
-function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): ChartData[] {
-    const prices: ChartData[] = []
+function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): InvestingChartDataPoint[] {
+    const prices: InvestingChartDataPoint[] = []
 
     if (dateRange === "1d" && data["c"] && data["t"]) {
         const c = data["c"]
@@ -51,14 +46,14 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
             time: item[0],
             price: item[4]
         }
-    }) as ChartData[]
+    }) as InvestingChartDataPoint[]
 }
 
 export default function InvestingChart({data}: { data: WatchlistItemDTO }) {
     const [dateRange, setDateRange] = useState("1d")
     const [activeDateRange, setActiveDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
-    const [chartData, setChartData] = useState([] as { time: number; price: number }[])
+    const [chartData, setChartData] = useState<InvestingChartDataPoint[]>([])
     const [pctChange, setPctChange] = useState<number | null>()
     const [valueChange, setValueChange] = useState<number | null>()
     const [previousClose, setPreviousClose] = useState<number | null>()
@@ -190,12 +185,24 @@ export default function InvestingChart({data}: { data: WatchlistItemDTO }) {
                     const prices = loadChartData(dateRange, data2)
 
                     if (prices && prices.length > 0) {
-                        const lastPrice = prices[prices.length - 1].price;
+                        const lastPoint = prices[prices.length - 1];
 
-                        setLastPrice(lastPrice)
-                        setValueChange((change / 100) * lastPrice)
+                        setLastPrice(lastPoint.price)
+                        setValueChange((change / 100) * lastPoint.price!)
 
-                        historyPreviousClose.current = lastPrice / (1 + change / 100)
+                        historyPreviousClose.current = lastPoint.price! / (1 + change / 100)
+
+                        const currentTime = new Date().getTime()
+
+                        if (currentTime >= lastPoint.time && currentTime <= lastPoint.time + 10 * 60 * 1000) {
+                            // 需要往后面添加几个数据
+                            for (let i = 0; i < 50; i++) {
+                                prices.push({
+                                    time: lastPoint.time + (i + 1) * 5 * 60 * 1000,
+                                    price: null
+                                })
+                            }
+                        }
                     }
 
                     if (dateRange === "1d") {
@@ -398,7 +405,6 @@ export default function InvestingChart({data}: { data: WatchlistItemDTO }) {
                                 }}/>
                             )
                         }
-
                     </AreaChart>
                 </ChartContainer>
             </div>

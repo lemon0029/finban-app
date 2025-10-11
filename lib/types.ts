@@ -60,3 +60,8 @@ export interface ExchangeInfoDTO {
     timezone: string;
     country: string;
 }
+
+export interface InvestingChartDataPoint {
+    time: number;
+    price: number | null;
+}

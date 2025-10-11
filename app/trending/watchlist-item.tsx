@@ -3,9 +3,8 @@ import {Badge} from "@/components/ui/badge";
 import AnimatedNumber from "@/components/animated-number";
 import {CheckIcon, PlusIcon, TrendingDownIcon, TrendingUpIcon} from "lucide-react";
 import {Button} from "@/components/ui/button";
-import React, {useRef} from "react";
-import {ExchangeInfoDTO, WatchlistItemDTO} from "@/lib/types";
-import {useInvestingPlatformConfig} from "@/hooks/use-investing-platform-config";
+import React from "react";
+import {WatchlistItemDTO} from "@/lib/types";
 
 // WatchlistItemProps
 export interface WatchlistItemProps {
@@ -27,12 +26,6 @@ export function WatchlistItem({
                                   removeFromWatchlist,
                                   onClick,
                               }: WatchlistItemProps) {
-
-    const {investingPlatformConfig} = useInvestingPlatformConfig();
-    const exchangeInfo = useRef<ExchangeInfoDTO | undefined>(null)
-
-    exchangeInfo.current = investingPlatformConfig?.exchanges.find(exchange => exchange.name === item.exchange)
-
     return (
         <Item className={"px-0"} onClick={onClick}>
             <ItemContent>
