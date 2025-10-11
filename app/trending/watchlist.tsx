@@ -204,7 +204,7 @@ export default function Watchlist() {
                 </div>
             )}
 
-            <Drawer open={openDialog} onOpenChange={setOpenDialog}>
+            <Drawer open={openDialog} onOpenChange={setOpenDialog} autoFocus={true}>
                 <DrawerContent className={"!rounded-t-2xl"}>
                     <DrawerHeader className={"pb-1"}>
                         <DialogTitle className={"mb-1 text-left flex flex-wrap w-full"}>

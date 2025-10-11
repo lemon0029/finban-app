@@ -16,7 +16,7 @@ import {InvestingChartDataPoint, WatchlistItemDTO} from "@/lib/types";
 
 const INVESTING_CHART_CONFIG = {
     price: {
-        label: "Price",
+        label: "Value",
         color: "var(--color-profit)",
     },
 } satisfies ChartConfig
