@@ -204,8 +204,12 @@ export default function Watchlist() {
                 </div>
             )}
 
-            <Drawer open={openDialog} onOpenChange={setOpenDialog} autoFocus={true}>
-                <DrawerContent className={"!rounded-t-2xl"}>
+            <Drawer open={openDialog} onOpenChange={setOpenDialog}>
+                <DrawerContent className={"!rounded-t-2xl focus:outline-none"}
+                               style={{
+                                   paddingBottom: 'env(safe-area-inset-bottom)'
+                               }}
+                >
                     <DrawerHeader className={"pb-1"}>
                         <DialogTitle className={"mb-1 text-left flex flex-wrap w-full"}>
                             <div className={"mr-2 text-xl flex items-end"}>
@@ -234,19 +238,19 @@ export default function Watchlist() {
                     )}
 
                     <DrawerFooter>
-                        <Button variant={"outline"} onClick={() => {
+                        <Button variant={"outline"}
+                                onClick={() => {
+                                    if (!selectedItem) {
+                                        return
+                                    }
 
-                            if (!selectedItem) {
-                                return
-                            }
-
-                            if (watchlist.some(it => it["id"] === selectedItem["id"])) {
-                                removeFromWatchlist(selectedItem)
-                                setOpenDialog(false)
-                            } else {
-                                addToWatchlist(selectedItem)
-                            }
-                        }}>
+                                    if (watchlist.some(it => it["id"] === selectedItem["id"])) {
+                                        removeFromWatchlist(selectedItem)
+                                        setOpenDialog(false)
+                                    } else {
+                                        addToWatchlist(selectedItem)
+                                    }
+                                }}>
                             {selectedItem && watchlist.some(it => it["id"] === selectedItem["id"]) ? (
                                 <span>Remove from watchlist</span>
                             ) : (
