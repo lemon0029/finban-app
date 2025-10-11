@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: "finban-app",
     description: "The personal finance dashboard",
+    appleWebApp: {
+        capable: true,
+        title: "finban-app",
+        statusBarStyle: "black-translucent",
+    },
 };
 
 export const viewport: Viewport = {
@@ -29,7 +34,11 @@ export const viewport: Viewport = {
 export default function RootLayout({children,}: Readonly<{ children: React.ReactNode; }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-        <body className={`${geistSans.variable} ${geistMono.variable} flex min-h-svh flex-col antialiased`}>
+        <body className={`${geistSans.variable} ${geistMono.variable} flex min-h-svh flex-col antialiased`}
+              style={{
+                  paddingTop: 'env(safe-area-inset-top)',
+                  paddingBottom: 'env(safe-area-inset-bottom)'
+              }}>
         <Providers>
             {children}
         </Providers>
