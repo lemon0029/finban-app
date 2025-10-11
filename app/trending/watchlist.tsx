@@ -18,15 +18,16 @@ import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-dat
 import {useDebounce} from "use-debounce";
 import useSWR from "swr";
 import {WatchlistItem} from "@/app/trending/watchlist-item";
+import {WatchlistItemDTO} from "@/lib/types";
 
 export default function Watchlist() {
     const [searchTerm, setSearchTerm] = useState("")
     const [debouncedSearchTerm] = useDebounce(searchTerm, 300)
     const [openDialog, setOpenDialog] = useState(false)
-    const [selectedItem, setSelectedItem] = useState()
+    const [selectedItem, setSelectedItem] = useState<WatchlistItemDTO | null>()
 
-    const [watchlist, setWatchlist] = useState([])
-    const [lastValues, setLastValues] = useState({})
+    const [watchlist, setWatchlist] = useState<WatchlistItemDTO[]>([])
+    const [lastValues, setLastValues] = useState({} as { [id: number]: { last: number, pctChange: number } })
     const [historyDataLoaded, setHistoryDataLoaded] = useState(false)
 
     const streaming = useRef<InvestingStreamingData>(null)
@@ -49,14 +50,14 @@ export default function Watchlist() {
         setWatchlist(JSON.parse(items))
     };
 
-    const removeFromWatchlist = (item: never) => {
+    const removeFromWatchlist = (item: WatchlistItemDTO) => {
         const newWatchlist = watchlist.filter(wi => wi["id"] !== item["id"])
 
         setWatchlist(newWatchlist)
         localStorage.setItem("watchlist", JSON.stringify(newWatchlist))
     }
 
-    const addToWatchlist = (item: never) => {
+    const addToWatchlist = (item: WatchlistItemDTO) => {
         const newWatchlist = [...watchlist, item]
 
         setWatchlist(newWatchlist)
@@ -77,11 +78,12 @@ export default function Watchlist() {
             const p = Promise.all([data1, data2])
                 .then(([data1, data2]) => {
                     setLastValues(prevObject => {
+                        const lastPoint = data2["data"][data2["data"].length - 1]
                         return {
                             ...prevObject,
                             [item["id"]]: {
                                 pctChange: data1["pct_1d"],
-                                last: data2["data"][data2["data"].length - 1][4]
+                                last: lastPoint ? lastPoint[4] : null
                             }
                         }
                     })
@@ -185,7 +187,7 @@ export default function Watchlist() {
                                         <WatchlistItem item={item}
                                                        isSearchResultItem={searchTerm !== ""}
                                                        isInWatchlist={watchlist.some(wi => wi["id"] === item["id"])}
-                                                       lastValue={lastValues[item["id"]]}
+                                                       lastValue={lastValues[item.id]}
                                                        addToWatchlist={addToWatchlist}
                                                        removeFromWatchlist={removeFromWatchlist}
                                                        onClick={() => {

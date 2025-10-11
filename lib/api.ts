@@ -160,8 +160,3 @@ export async function fetchInvestingChartData(id: number, symbol: string, period
         return await response.json();
     }
 }
-
-export async function investingSearch(query: string) {
-    const response = await fetch(`https://api.investing.com/api/search/v2/search?q=${query}`);
-    return await response.json();
-}

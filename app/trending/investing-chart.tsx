@@ -12,6 +12,7 @@ import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 import {Separator} from "@/components/ui/separator";
 import AnimatedNumber from "@/components/animated-number";
 import {InvestingStreamingData, PidInfo} from "@/lib/investing-api/streaming-data";
+import {WatchlistItemDTO} from "@/lib/types";
 
 const INVESTING_CHART_CONFIG = {
     price: {
@@ -53,7 +54,7 @@ function loadChartData(dateRange: string, data: { [x: string]: never[][]; }): Ch
     }) as ChartData[]
 }
 
-export default function InvestingChart({data}: { data: never }) {
+export default function InvestingChart({data}: { data: WatchlistItemDTO }) {
     const [dateRange, setDateRange] = useState("1d")
     const [activeDateRange, setActiveDateRange] = useState("1d")
     const [dataLoading, setDataLoading] = useState(false)
@@ -68,8 +69,8 @@ export default function InvestingChart({data}: { data: never }) {
     const [askPrice, setAskPrice] = useState<number | null>()
     const [bidPrice, setBidPrice] = useState<number | null>()
 
-    const pairId = useRef<number>(data['id'])
-    const symbolUrl = useRef(data['url'])
+    const pairId = useRef<number>(data.id)
+    const symbolUrl = useRef(data.url)
     const historyPreviousClose = useRef<number | null>(null)
     const dateRangeRef = useRef("1d")
 
@@ -77,7 +78,7 @@ export default function InvestingChart({data}: { data: never }) {
         return () => {
             if (streaming.current != null) {
                 streaming.current.close()
-                console.log("Closed stream, pid: " + data["id"])
+                console.log("Closed stream, pid: " + data.id)
             }
         }
     }, [data]);
@@ -192,9 +193,10 @@ export default function InvestingChart({data}: { data: never }) {
                         const lastPrice = prices[prices.length - 1].price;
 
                         setLastPrice(lastPrice)
+                        setValueChange((change / 100) * lastPrice)
+
                         historyPreviousClose.current = lastPrice / (1 + change / 100)
                     }
-
 
                     if (dateRange === "1d") {
                         historyPreviousClose.current = null

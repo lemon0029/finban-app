@@ -28,3 +28,35 @@ export interface HoldingDTO {
     costAmount: number;
     startHoldingDate: string;
 }
+
+export interface WatchlistItemDTO {
+    id: number;
+    symbol: string;
+    exchange: string;
+    flag: string;
+    description: string;
+    type: string;
+    url: string;
+}
+
+export interface InvestingPlatformConfig {
+    supports_search: boolean,
+    supports_group_request: boolean,
+    supports_marks: boolean,
+    exchanges: ExchangeInfoDTO[],
+    symbolsTypes: never[],
+    supportedResolutions: string[]
+}
+
+export interface ExchangeInfoDTO {
+    id: string;
+    name: string;
+    value: string;
+    desc: string;
+    opentime: string;
+    closetime: string;
+    week_end_day: string;
+    week_start_day: string;
+    timezone: string;
+    country: string;
+}
