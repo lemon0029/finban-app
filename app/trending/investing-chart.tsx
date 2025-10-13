@@ -192,15 +192,17 @@ export default function InvestingChart({data}: { data: WatchlistItemDTO }) {
 
                         historyPreviousClose.current = lastPoint.price! / (1 + change / 100)
 
-                        const currentTime = new Date().getTime()
+                        if (dateRange === "1d") {
+                            const currentTime = new Date().getTime()
 
-                        if (currentTime >= lastPoint.time && currentTime <= lastPoint.time + 10 * 60 * 1000) {
-                            // 需要往后面添加几个数据
-                            for (let i = 0; i < 50; i++) {
-                                prices.push({
-                                    time: lastPoint.time + (i + 1) * 5 * 60 * 1000,
-                                    price: null
-                                })
+                            if (currentTime >= lastPoint.time && currentTime <= lastPoint.time + 30 * 60 * 1000) {
+                                // 需要往后面添加几个数据
+                                for (let i = 0; i < 50; i++) {
+                                    prices.push({
+                                        time: lastPoint.time + (i + 1) * 5 * 60 * 1000,
+                                        price: null
+                                    })
+                                }
                             }
                         }
                     }
@@ -304,15 +306,15 @@ export default function InvestingChart({data}: { data: WatchlistItemDTO }) {
                                 </div>
                             </div>
 
-                            <div className={"self-end flex flex-col font-mono"}>
+                            <div className={"self-end flex flex-col font-mono text-end"}>
                                 {askPrice && askPrice !== 0 ? (
-                                    <span className={"text-muted-foreground text-xs w-22"}>
+                                    <span className={"text-muted-foreground text-xs w-28"}>
                                         Ask: <AnimatedNumber value={askPrice}/>
                                     </span>
                                 ) : (<span/>)}
 
                                 {bidPrice && bidPrice !== 0 ? (
-                                    <span className={"text-muted-foreground text-xs w-22"}>
+                                    <span className={"text-muted-foreground text-xs w-28"}>
                                          Bid: <AnimatedNumber value={bidPrice}/>
                                     </span>
                                 ) : <span/>}
