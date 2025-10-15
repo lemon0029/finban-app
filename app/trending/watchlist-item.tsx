@@ -41,7 +41,7 @@ export function WatchlistItem({
 
             {
                 !isSearchResultItem && (
-                    <ItemContent>
+                    <ItemContent className={"text-end"}>
                         {
                             lastValue && lastValue.last && (
                                 <ItemTitle className={"flex justify-end w-full"}>
@@ -53,7 +53,7 @@ export function WatchlistItem({
                         {
                             lastValue && lastValue.pctChange && (
                                 <Badge variant={"secondary"}
-                                       className={`${lastValue.pctChange > 0 ? "bg-[var(--color-profit)]/10 text-[var(--color-profit)]" : "bg-[var(--color-loss)]/10 text-[var(--color-loss)]"}`}
+                                       className={`self-end ${lastValue.pctChange > 0 ? "bg-[var(--color-profit)]/10 text-[var(--color-profit)]" : "bg-[var(--color-loss)]/10 text-[var(--color-loss)]"}`}
                                 >
                                     {
                                         lastValue.pctChange > 0 ? (
